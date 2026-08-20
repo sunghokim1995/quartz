@@ -22,44 +22,75 @@ componentRegistry.setOptionOverrides("@quartz-community/explorer", {
     return !(node.isFolder && node.slugSegments?.length === 1 && hidden.includes(node.slugSegment))
   },
   mapFn: (node: any) => {
-    const labels: Record<string, string> = {
+    const rootLabels: Record<string, string> = {
       projects: "프로젝트",
-      inbox: "인박스",
-      literature: "문헌",
-      decisions: "결정",
+      concepts: "개념",
       experiments: "실험",
       analyses: "분석",
+      literature: "문헌",
+      inbox: "인박스",
+      decisions: "결정",
       calculations: "계산",
-      concepts: "개념",
       molecules: "분자",
       dashboard: "대시보드",
       workflows: "워크플로",
       playbooks: "플레이북",
     }
-    if (node.isFolder && node.slugSegments?.length === 1 && labels[node.slugSegment]) {
-      node.displayName = labels[node.slugSegment]
+    const projectLabels: Record<string, string> = {
+      ongoing: "진행 중 프로젝트",
+      completed: "완료된 프로젝트",
+      "beta-test": "베타 테스트 프로젝트",
+    }
+    if (node.isFolder && node.slugSegments?.length === 1 && rootLabels[node.slugSegment]) {
+      node.displayName = rootLabels[node.slugSegment]
+    }
+    if (
+      node.isFolder &&
+      node.slugSegments?.length === 2 &&
+      node.slugSegments[0] === "projects" &&
+      projectLabels[node.slugSegment]
+    ) {
+      node.displayName = projectLabels[node.slugSegment]
     }
     return node
   },
   sortFn: (a: any, b: any) => {
-    const priority = [
+    const rootPriority = [
+      "home",
       "projects",
-      "inbox",
-      "literature",
-      "decisions",
+      "concepts",
       "experiments",
       "analyses",
+      "literature",
+      "inbox",
+      "decisions",
       "calculations",
-      "concepts",
       "molecules",
       "dashboard",
       "workflows",
       "playbooks",
     ]
-    const aIndex = a.isFolder && a.slugSegments?.length === 1 ? priority.indexOf(a.slugSegment) : -1
-    const bIndex = b.isFolder && b.slugSegments?.length === 1 ? priority.indexOf(b.slugSegment) : -1
+    const projectPriority = ["ongoing", "completed", "beta-test"]
+    const aIndex = a.slugSegments?.length === 1 ? rootPriority.indexOf(a.slugSegment) : -1
+    const bIndex = b.slugSegments?.length === 1 ? rootPriority.indexOf(b.slugSegment) : -1
     if (aIndex !== bIndex && (aIndex >= 0 || bIndex >= 0)) {
-      return (aIndex >= 0 ? aIndex : priority.length) - (bIndex >= 0 ? bIndex : priority.length)
+      return (
+        (aIndex >= 0 ? aIndex : rootPriority.length) - (bIndex >= 0 ? bIndex : rootPriority.length)
+      )
+    }
+    const aProjectIndex =
+      a.isFolder && a.slugSegments?.length === 2 && a.slugSegments[0] === "projects"
+        ? projectPriority.indexOf(a.slugSegment)
+        : -1
+    const bProjectIndex =
+      b.isFolder && b.slugSegments?.length === 2 && b.slugSegments[0] === "projects"
+        ? projectPriority.indexOf(b.slugSegment)
+        : -1
+    if (aProjectIndex !== bProjectIndex && (aProjectIndex >= 0 || bProjectIndex >= 0)) {
+      return (
+        (aProjectIndex >= 0 ? aProjectIndex : projectPriority.length) -
+        (bProjectIndex >= 0 ? bProjectIndex : projectPriority.length)
+      )
     }
     if (a.isFolder !== b.isFolder) {
       return a.isFolder ? -1 : 1
