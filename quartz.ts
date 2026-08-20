@@ -19,7 +19,18 @@ componentRegistry.setOptionOverrides("@quartz-community/explorer", {
       "failures",
       "tags",
     ]
-    return !(node.isFolder && node.slugSegments?.length === 1 && hidden.includes(node.slugSegment))
+    const segments = node.slugSegments ?? []
+    const isProjectChild =
+      segments.length === 4 &&
+      segments[0] === "projects" &&
+      ["ongoing", "completed", "beta-test"].includes(segments[1])
+
+    if (node.isFolder && segments.length === 1 && hidden.includes(node.slugSegment)) {
+      return false
+    }
+
+    // Keep the project overview and canonical containers, but hide direct technical support notes.
+    return !isProjectChild || node.isFolder || node.slugSegment === "project"
   },
   mapFn: (node: any) => {
     const rootLabels: Record<string, string> = {
@@ -41,6 +52,14 @@ componentRegistry.setOptionOverrides("@quartz-community/explorer", {
       completed: "완료된 프로젝트",
       "beta-test": "베타 테스트 프로젝트",
     }
+    const projectDisplayNames: Record<string, string> = {
+      "htfsi-mc-water": "HTFSI-MC project",
+      "lifsi-organic-solvents": "EMS-LHCE project",
+      "mc-cpme-solvent-screening": "MC-CPME project",
+      "peald-tald-nb2o5-ncm811": "PEALD 프로젝트",
+      "aiida-orca": "AiiDA ORCA",
+    }
+    const segments = node.slugSegments ?? []
     if (node.isFolder && node.slugSegments?.length === 1 && rootLabels[node.slugSegment]) {
       node.displayName = rootLabels[node.slugSegment]
     }
@@ -51,6 +70,24 @@ componentRegistry.setOptionOverrides("@quartz-community/explorer", {
       projectLabels[node.slugSegment]
     ) {
       node.displayName = projectLabels[node.slugSegment]
+    }
+    if (
+      node.isFolder &&
+      segments.length === 3 &&
+      segments[0] === "projects" &&
+      ["ongoing", "completed", "beta-test"].includes(segments[1]) &&
+      projectDisplayNames[node.slugSegment]
+    ) {
+      node.displayName = projectDisplayNames[node.slugSegment]
+    }
+    if (
+      !node.isFolder &&
+      segments.length === 4 &&
+      segments[0] === "projects" &&
+      ["ongoing", "completed", "beta-test"].includes(segments[1]) &&
+      node.slugSegment === "project"
+    ) {
+      node.displayName = "개요"
     }
     return node
   },
