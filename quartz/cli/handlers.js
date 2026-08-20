@@ -562,8 +562,14 @@ export async function handleBuild(argv) {
       }
       throw err
     })
-    server.listen(argv.port)
-    const wss = new WebSocketServer({ port: argv.wsPort })
+    if (argv.host) {
+      server.listen(argv.port, argv.host)
+    } else {
+      server.listen(argv.port)
+    }
+    const wss = new WebSocketServer(
+      argv.host ? { port: argv.wsPort, host: argv.host } : { port: argv.wsPort },
+    )
     wss.on("error", (err) => {
       if (err.code === "EADDRINUSE") {
         console.error(
