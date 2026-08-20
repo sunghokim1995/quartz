@@ -52,13 +52,6 @@ componentRegistry.setOptionOverrides("@quartz-community/explorer", {
       completed: "완료된 프로젝트",
       "beta-test": "베타 테스트 프로젝트",
     }
-    const projectDisplayNames: Record<string, string> = {
-      "htfsi-mc-water": "HTFSI-MC project",
-      "lifsi-organic-solvents": "EMS-LHCE project",
-      "mc-cpme-solvent-screening": "MC-CPME project",
-      "peald-tald-nb2o5-ncm811": "PEALD 프로젝트",
-      "aiida-orca": "AiiDA ORCA",
-    }
     const segments = node.slugSegments ?? []
     if (node.isFolder && node.slugSegments?.length === 1 && rootLabels[node.slugSegment]) {
       node.displayName = rootLabels[node.slugSegment]
@@ -75,10 +68,17 @@ componentRegistry.setOptionOverrides("@quartz-community/explorer", {
       node.isFolder &&
       segments.length === 3 &&
       segments[0] === "projects" &&
-      ["ongoing", "completed", "beta-test"].includes(segments[1]) &&
-      projectDisplayNames[node.slugSegment]
+      ["ongoing", "completed", "beta-test"].includes(segments[1])
     ) {
-      node.displayName = projectDisplayNames[node.slugSegment]
+      const overview = node.children.find(
+        (child: any) => !child.isFolder && child.slugSegment === "project",
+      )
+      const title = overview?.data?.title
+      const projectId = overview?.data?.project_id
+      node.displayName =
+        (typeof title === "string" && title.trim()) ||
+        (typeof projectId === "string" && projectId.trim()) ||
+        node.slugSegment
     }
     if (
       !node.isFolder &&
