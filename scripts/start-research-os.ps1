@@ -64,8 +64,13 @@ if ($listeners.Count -gt 0) {
 Write-QuartzLog "Starting Research OS on http://${HostAddress}:$Port (output: $OutputLogFile)."
 Push-Location -LiteralPath $QuartzRoot
 try {
-  $npx = (Get-Command npx.cmd -ErrorAction Stop).Source
-  & $npx quartz build --serve -d $WikiPath --host $HostAddress --port $Port 2>&1 | Out-File -LiteralPath $OutputLogFile -Encoding utf8
+  $node = (Get-Command node.exe -ErrorAction Stop).Source
+  $QuartzCli = Join-Path $QuartzRoot "quartz\bootstrap-cli.mjs"
+  if (-not (Test-Path -LiteralPath $QuartzCli -PathType Leaf)) {
+    throw "Quartz CLI not found: $QuartzCli"
+  }
+
+  & $node $QuartzCli build --serve -d $WikiPath --host $HostAddress --port $Port 2>&1 | Out-File -LiteralPath $OutputLogFile -Encoding utf8
   $exitCode = $LASTEXITCODE
   if ($exitCode -ne 0) {
     Write-QuartzLog -Level ERROR -Message "Quartz exited with code $exitCode."
