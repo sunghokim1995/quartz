@@ -57,8 +57,12 @@ switch ($Command) {
       Start-ScheduledTask -TaskName $TaskName
       Write-Output "Started scheduled task: $TaskName"
     } else {
-      $powerShell = Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\powershell.exe"
-      Start-Process -FilePath $powerShell -ArgumentList "-NoLogo -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$StartScript`"" -WindowStyle Hidden | Out-Null
+      $hiddenPowerShellWrapper = Join-Path $PSScriptRoot "invoke-hidden-powershell.vbs"
+      if (-not (Test-Path -LiteralPath $hiddenPowerShellWrapper -PathType Leaf)) {
+        throw "Hidden PowerShell wrapper is missing: $hiddenPowerShellWrapper"
+      }
+      $wscript = Join-Path $env:SystemRoot "System32\wscript.exe"
+      Start-Process -FilePath $wscript -ArgumentList "//B `"$hiddenPowerShellWrapper`" `"$StartScript`"" -WindowStyle Hidden | Out-Null
       Write-Output "Started Research OS in the background."
     }
   }
