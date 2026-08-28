@@ -1,8 +1,10 @@
 import type {
+  FullSlug,
   QuartzComponent,
   QuartzComponentConstructor,
   QuartzPluginData,
 } from "@quartz-community/types"
+import { resolveRelative } from "@quartz-community/utils"
 import React from "preact/compat"
 
 void React
@@ -12,8 +14,8 @@ type ProjectStatus = "ongoing" | "submitted" | "beta-test" | "unknown"
 export interface ProjectExplorerMetadata {
   folderPath: string
   overviewSlug: string
+  title: string
   status: ProjectStatus
-  defaultExpanded: boolean
 }
 
 interface ExplorerNode {
@@ -60,8 +62,8 @@ export function buildProjectExplorerMetadata(files: QuartzPluginData[]): Project
           metadata: {
             folderPath: `${projectSlug}/index`,
             overviewSlug: slug,
+            title: String(frontmatter.title ?? projectSlug),
             status,
-            defaultExpanded: status === "ongoing",
           } satisfies ProjectExplorerMetadata,
           title: String(frontmatter.title ?? projectSlug),
         },
@@ -160,6 +162,32 @@ function setupResearchOSExplorerRefinement() {
 
     const currentSlug = (document.body.dataset.slug || location.pathname)
       .replace(/^\\/+|\\/+$/g, "")
+    const basepath = (document.body.dataset.basepath || "").replace(/\\/$/, "")
+    const projectsListItem = projectsContainer.closest("li")
+    let ongoingSection = explorer.querySelector(".researchos-ongoing-section")
+    const ongoingTemplate = document.querySelector("template.researchos-ongoing-template")
+    if (!ongoingSection && ongoingTemplate?.content.firstElementChild) {
+      ongoingSection = ongoingTemplate.content.firstElementChild.cloneNode(true)
+      projectsListItem?.before(ongoingSection)
+    } else if (
+      ongoingSection &&
+      projectsListItem &&
+      ongoingSection.nextElementSibling !== projectsListItem
+    ) {
+      projectsListItem.before(ongoingSection)
+    }
+
+    for (const link of ongoingSection?.querySelectorAll("a.researchos-ongoing-link") || []) {
+      const projectSlug = link.dataset.projectPath
+      const overviewSlug = link.dataset.overviewSlug
+      const isCurrentProject =
+        projectSlug && (currentSlug === projectSlug || currentSlug.startsWith(projectSlug + "/"))
+      link.classList.toggle("is-current", Boolean(isCurrentProject))
+      if (isCurrentProject) link.setAttribute("aria-current", "location")
+      else link.removeAttribute("aria-current")
+      if (overviewSlug) link.setAttribute("href", basepath + "/" + overviewSlug)
+    }
+
     const projectItems = Array.from(projectList.children).filter((item) =>
       item.querySelector(":scope > .folder-container"),
     )
@@ -186,7 +214,7 @@ function setupResearchOSExplorerRefinement() {
         const projectSlug = folderPath.replace(/\\/index$/, "")
         const isCurrentProject =
           currentSlug === projectSlug || currentSlug.startsWith(projectSlug + "/")
-        if (project.defaultExpanded || isCurrentProject) children?.classList.add("open")
+        if (isCurrentProject) children?.classList.add("open")
         else children?.classList.remove("open")
       }
     }
@@ -219,16 +247,50 @@ document.addEventListener("render", setupResearchOSExplorerRefinement)
 `
 
 const ExplorerRefinement: QuartzComponentConstructor = () => {
-  const Component: QuartzComponent = ({ allFiles }) => {
+  const Component: QuartzComponent = ({ allFiles, fileData }) => {
     const projects = buildProjectExplorerMetadata(allFiles)
     if (projects.length === 0) return null
+    const currentSlug = String(fileData.slug ?? "index")
+    const ongoingProjects = projects.filter((project) => project.status === "ongoing")
 
     return (
-      <div
-        class="researchos-explorer-metadata"
-        hidden
-        data-researchos-projects={encodeURIComponent(JSON.stringify(projects))}
-      />
+      <>
+        {ongoingProjects.length > 0 && (
+          <template class="researchos-ongoing-template">
+            <li class="researchos-ongoing-section">
+              <div class="researchos-ongoing-heading">Ongoing</div>
+              <ul class="researchos-ongoing-list">
+                {ongoingProjects.map((project) => {
+                  const projectSlug = project.folderPath.replace(/\/index$/, "")
+                  const isCurrentProject =
+                    currentSlug === projectSlug || currentSlug.startsWith(projectSlug + "/")
+                  return (
+                    <li>
+                      <a
+                        class={"researchos-ongoing-link" + (isCurrentProject ? " is-current" : "")}
+                        href={resolveRelative(
+                          currentSlug as FullSlug,
+                          project.overviewSlug as FullSlug,
+                        )}
+                        data-project-path={projectSlug}
+                        data-overview-slug={project.overviewSlug}
+                        aria-current={isCurrentProject ? "location" : undefined}
+                      >
+                        {project.title}
+                      </a>
+                    </li>
+                  )
+                })}
+              </ul>
+            </li>
+          </template>
+        )}
+        <div
+          class="researchos-explorer-metadata"
+          hidden
+          data-researchos-projects={encodeURIComponent(JSON.stringify(projects))}
+        />
+      </>
     )
   }
 

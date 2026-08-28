@@ -432,34 +432,76 @@ test("Explorer project metadata derives status-first navigation from canonical f
     {
       folderPath: "projects/alpha/index",
       overviewSlug: "projects/alpha/overview",
+      title: "Alpha",
       status: "ongoing",
-      defaultExpanded: true,
     },
     {
       folderPath: "projects/zeta/index",
       overviewSlug: "projects/zeta/overview",
+      title: "Zeta",
       status: "ongoing",
-      defaultExpanded: true,
     },
     {
       folderPath: "projects/beta/index",
       overviewSlug: "projects/beta/overview",
+      title: "Beta",
       status: "submitted",
-      defaultExpanded: false,
     },
     {
       folderPath: "projects/gamma/index",
       overviewSlug: "projects/gamma/overview",
+      title: "Gamma",
       status: "beta-test",
-      defaultExpanded: false,
     },
     {
       folderPath: "projects/omega/index",
       overviewSlug: "projects/omega/overview",
+      title: "Omega",
       status: "unknown",
-      defaultExpanded: false,
     },
   ])
+})
+
+test("Explorer quick access renders canonical ongoing projects as direct Overview links", async () => {
+  const { default: ExplorerRefinement } = await import("./src/components/ExplorerRefinement.tsx")
+  const Component = ExplorerRefinement()
+  const html = render(
+    Component({
+      ctx: {},
+      externalResources: { css: [], js: [], additionalHead: [] },
+      cfg: {},
+      children: [],
+      tree: { type: "root", children: [] },
+      fileData: { slug: "projects/zeta/overview" },
+      allFiles: [
+        {
+          slug: "projects/beta/overview",
+          frontmatter: { type: "project", title: "Beta", project_status: "submitted" },
+        },
+        {
+          slug: "projects/zeta/overview",
+          frontmatter: { type: "project", title: "Zeta", project_status: "ongoing" },
+        },
+        {
+          slug: "projects/alpha/overview",
+          frontmatter: { type: "project", title: "Alpha", project_status: "ongoing" },
+        },
+      ],
+    } as never),
+  )
+
+  assert.match(html, /<template class="researchos-ongoing-template">/)
+  assert.match(html, /class="researchos-ongoing-heading"[^>]*>Ongoing<\/div>/)
+  assert.match(
+    html,
+    /<a(?=[^>]*class="researchos-ongoing-link")(?=[^>]*href="\.\.\/\.\.\/projects\/alpha\/overview")[^>]*>Alpha<\/a>/,
+  )
+  assert.match(
+    html,
+    /<a(?=[^>]*class="researchos-ongoing-link is-current")(?=[^>]*href="\.\.\/\.\.\/projects\/zeta\/overview")(?=[^>]*aria-current="location")[^>]*>Zeta<\/a>/,
+  )
+  assert.doesNotMatch(html, />Beta<\/a>/)
+  assert.doesNotMatch(html, /folder-icon|folder-button|>Overview<\/a>/)
 })
 
 test("Explorer node ordering keeps Overview before project child folders", async () => {

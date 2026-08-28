@@ -271,6 +271,55 @@ button.mobile-explorer {
   color: color-mix(in srgb, var(--ros-text-secondary) 82%, transparent);
 }
 
+.researchos-ongoing-section {
+  margin: 0.2rem 0 0.7rem;
+  padding: 0 0 0.7rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--ros-silver) 12%, transparent);
+}
+
+.researchos-ongoing-heading {
+  margin: 0 0 0.18rem;
+  color: var(--ros-muted);
+  font-family: var(--ros-ui-font);
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: 0.015em;
+  line-height: 1.5rem;
+}
+
+.researchos-ongoing-list {
+  margin: 0;
+  padding: 0;
+}
+
+.explorer-content .researchos-ongoing-link {
+  display: block;
+  padding: 0.22rem 0.4rem 0.22rem 1.05rem;
+  border-radius: 6px;
+  color: color-mix(in srgb, var(--ros-text-secondary) 88%, transparent);
+  font-family: var(--ros-ui-font);
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.35rem;
+  opacity: 1;
+  text-decoration: none;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+
+  &:hover {
+    color: var(--ros-accent-hover);
+    background: color-mix(in srgb, var(--ros-accent) 7%, transparent);
+  }
+
+  &.is-current {
+    color: var(--ros-accent);
+    background: transparent;
+    box-shadow: inset 2px 0 0 var(--ros-accent);
+    font-weight: 650;
+  }
+}
+
 .page-title a,
 .breadcrumb-container a,
 .page[data-frame="default"] .sidebar.right > .toc .toc-content a:not(.in-view),
