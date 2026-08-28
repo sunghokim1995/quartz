@@ -9,7 +9,7 @@ import React from "preact/compat"
 
 void React
 
-type ProjectStatus = "ongoing" | "submitted" | "beta-test" | "unknown"
+type ProjectStatus = "ongoing" | "completed" | "beta-test" | "unknown"
 
 export interface ProjectExplorerMetadata {
   folderPath: string
@@ -27,7 +27,7 @@ interface ExplorerNode {
 
 const statusPriority: Record<ProjectStatus, number> = {
   ongoing: 0,
-  submitted: 1,
+  completed: 1,
   "beta-test": 2,
   unknown: 3,
 }
@@ -36,7 +36,7 @@ function normalizeProjectStatus(value: unknown): ProjectStatus {
   const status = String(value ?? "")
     .trim()
     .toLowerCase()
-  if (status === "ongoing" || status === "submitted" || status === "beta-test") {
+  if (status === "ongoing" || status === "completed" || status === "beta-test") {
     return status
   }
   return "unknown"

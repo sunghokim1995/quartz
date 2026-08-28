@@ -11,9 +11,13 @@ interface DashboardLink {
   title: string
 }
 
+type ProjectStatus = "ongoing" | "completed" | "beta-test"
+type PublicationStatus = "none" | "drafting" | "submitted" | "published"
+
 interface ProjectCard extends DashboardLink {
   projectId?: string
-  status: "ongoing" | "submitted" | "beta-test"
+  status: ProjectStatus
+  publicationStatus: PublicationStatus
   counts: {
     concepts: number
     molecules: number
@@ -23,7 +27,7 @@ interface ProjectCard extends DashboardLink {
 export interface HomeDashboardData {
   projects: {
     ongoing: ProjectCard[]
-    submitted: ProjectCard[]
+    completed: ProjectCard[]
     betaTest: ProjectCard[]
   }
   concepts: {
@@ -64,7 +68,7 @@ function alphabetically<T extends DashboardLink>(items: T[]): T[] {
 
 export function buildHomeDashboardData(files: QuartzPluginData[]): HomeDashboardData {
   const data: HomeDashboardData = {
-    projects: { ongoing: [], submitted: [], betaTest: [] },
+    projects: { ongoing: [], completed: [], betaTest: [] },
     concepts: { descriptor: [], mechanism: [], outcome: [] },
     moleculeCount: 0,
     literatureCount: 0,
@@ -79,16 +83,23 @@ export function buildHomeDashboardData(files: QuartzPluginData[]): HomeDashboard
 
     if (type === "project") {
       const projectStatus = String(frontmatter.project_status ?? "").toLowerCase()
-      if (!["ongoing", "submitted", "beta-test"].includes(projectStatus)) continue
+      if (!["ongoing", "completed", "beta-test"].includes(projectStatus)) continue
+      const rawPublicationStatus = String(frontmatter.publication_status ?? "none").toLowerCase()
+      const publicationStatus = ["none", "drafting", "submitted", "published"].includes(
+        rawPublicationStatus,
+      )
+        ? (rawPublicationStatus as PublicationStatus)
+        : "none"
       const card: ProjectCard = {
         slug: String(file.slug),
         title: titleOf(file),
         projectId: frontmatter.project_id ? String(frontmatter.project_id) : undefined,
         status: projectStatus as ProjectCard["status"],
+        publicationStatus,
         counts: countRelations(frontmatter),
       }
       if (projectStatus === "ongoing") data.projects.ongoing.push(card)
-      if (projectStatus === "submitted") data.projects.submitted.push(card)
+      if (projectStatus === "completed") data.projects.completed.push(card)
       if (projectStatus === "beta-test") data.projects.betaTest.push(card)
     }
 
@@ -110,7 +121,7 @@ export function buildHomeDashboardData(files: QuartzPluginData[]): HomeDashboard
   }
 
   alphabetically(data.projects.ongoing)
-  alphabetically(data.projects.submitted)
+  alphabetically(data.projects.completed)
   alphabetically(data.projects.betaTest)
   alphabetically(data.concepts.descriptor)
   alphabetically(data.concepts.mechanism)
@@ -145,8 +156,21 @@ function ProjectSection({
         <div class="researchos-project-grid">
           {projects.map((project) => (
             <a class="researchos-project-card" href={href(fromSlug, project.slug)}>
-              <span class={`researchos-badge researchos-badge-${project.status}`}>
-                {project.status.toUpperCase()}
+              <span class="researchos-project-lifecycle">
+                <span
+                  class={`researchos-badge researchos-badge-research researchos-badge-${project.status}`}
+                  aria-label={`Research lifecycle: ${project.status}`}
+                >
+                  {project.status.toUpperCase()}
+                </span>
+                {project.publicationStatus !== "none" && (
+                  <span
+                    class={`researchos-badge researchos-badge-publication researchos-badge-${project.publicationStatus}`}
+                    aria-label={`Publication lifecycle: ${project.publicationStatus}`}
+                  >
+                    {project.publicationStatus.toUpperCase()}
+                  </span>
+                )}
               </span>
               <h3>{project.title}</h3>
               {project.projectId && <code>{project.projectId}</code>}
@@ -195,8 +219,8 @@ const HomeDashboard: QuartzComponent = ({ fileData, allFiles }) => {
         fromSlug={fromSlug}
       />
       <ProjectSection
-        title="Submitted Projects"
-        projects={data.projects.submitted}
+        title="Completed Research"
+        projects={data.projects.completed}
         fromSlug={fromSlug}
       />
       <ProjectSection

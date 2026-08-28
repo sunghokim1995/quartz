@@ -433,6 +433,16 @@ button.mobile-explorer {
   letter-spacing: 0.055em;
 }
 
+.researchos-project-lifecycle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.researchos-badge-publication {
+  border-style: dashed;
+}
+
 .researchos-badge-ongoing {
   border-color: color-mix(
     in srgb,
@@ -446,10 +456,29 @@ button.mobile-explorer {
     0 5px 14px color-mix(in srgb, var(--ros-accent) 12%, transparent);
 }
 
-.researchos-badge-submitted {
+.researchos-badge-completed {
   border-color: color-mix(in srgb, var(--ros-silver) 42%, transparent);
   color: var(--ros-text-secondary);
   background: color-mix(in srgb, var(--ros-silver) 13%, transparent);
+}
+
+.researchos-badge-beta-test,
+.researchos-badge-drafting {
+  border-color: color-mix(in srgb, var(--ros-silver) 34%, transparent);
+  color: var(--ros-muted);
+  background: color-mix(in srgb, var(--ros-silver) 8%, transparent);
+}
+
+.researchos-badge-submitted {
+  border-color: color-mix(in srgb, var(--ros-accent) 48%, transparent);
+  color: var(--ros-text-secondary);
+  background: color-mix(in srgb, var(--ros-cobalt) 10%, transparent);
+}
+
+.researchos-badge-published {
+  border-color: color-mix(in srgb, var(--ros-accent) 72%, transparent);
+  color: var(--ros-text-primary);
+  background: color-mix(in srgb, var(--ros-cobalt) 17%, transparent);
 }
 
 .researchos-page-actions a,

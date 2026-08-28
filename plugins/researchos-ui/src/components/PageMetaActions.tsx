@@ -5,8 +5,13 @@ import { isDownloadableCanonical } from "../emitters/PublicationMarkdown"
 
 void React
 
+interface PresentationBadge {
+  label: string
+  axis: "research" | "publication" | "classification"
+}
+
 interface PagePresentation {
-  badges: string[]
+  badges: PresentationBadge[]
   metadata: string[]
   markdownPath: string
 }
@@ -17,12 +22,14 @@ function textValue(value: unknown): string | undefined {
   return text || undefined
 }
 
-function badgeClass(value: string): string {
-  const variant = value
+function badgeClass(badge: PresentationBadge): string {
+  const variant = badge.label
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
-  return variant ? `researchos-badge researchos-badge-${variant}` : "researchos-badge"
+  return variant
+    ? `researchos-badge researchos-badge-${badge.axis} researchos-badge-${variant}`
+    : `researchos-badge researchos-badge-${badge.axis}`
 }
 
 export function getPagePresentation(
@@ -32,11 +39,11 @@ export function getPagePresentation(
   if (!isDownloadableCanonical(frontmatter)) return null
 
   const type = String(frontmatter?.type ?? "").toLowerCase()
-  const badges: string[] = []
+  const badges: PresentationBadge[] = []
   const metadata: string[] = []
-  const addBadge = (value: unknown) => {
+  const addBadge = (value: unknown, axis: PresentationBadge["axis"] = "classification") => {
     const text = textValue(value)
-    if (text) badges.push(text.toUpperCase())
+    if (text) badges.push({ label: text.toUpperCase(), axis })
   }
   const addMetadata = (value: unknown) => {
     const text = textValue(value)
@@ -44,7 +51,11 @@ export function getPagePresentation(
   }
 
   if (type === "project") {
-    addBadge(frontmatter?.project_status)
+    addBadge(frontmatter?.project_status, "research")
+    const publicationStatus = String(frontmatter?.publication_status ?? "none").toLowerCase()
+    if (["drafting", "submitted", "published"].includes(publicationStatus)) {
+      addBadge(publicationStatus, "publication")
+    }
     addMetadata(frontmatter?.project_id)
   } else if (type === "concept") {
     addBadge(frontmatter?.concept_type)
@@ -94,7 +105,9 @@ const PageMetaActions: QuartzComponentConstructor = () => {
       <div class="researchos-page-meta-actions">
         <div class="researchos-object-meta" aria-label="페이지 분류와 식별자">
           {presentation.badges.map((badge) => (
-            <span class={badgeClass(badge)}>{badge}</span>
+            <span class={badgeClass(badge)} aria-label={`${badge.axis}: ${badge.label}`}>
+              {badge.label}
+            </span>
           ))}
           {presentation.metadata.map((item) => (
             <code>{item}</code>

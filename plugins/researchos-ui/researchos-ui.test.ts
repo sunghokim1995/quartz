@@ -54,6 +54,11 @@ test("compiled dark materials use the fixed palette and distinct Liquid Glass de
   )
   assert.match(css, /\.explorer-content a[^}]*background:\s*var\(--ros-accent-soft\)/s)
   assert.match(css, /\.researchos-badge-ongoing[^{]*\{[^}]*var\(--ros-cobalt\)/s)
+  assert.match(css, /\.researchos-badge-completed[^{]*\{/s)
+  assert.match(css, /\.researchos-badge-beta-test[^{]*\{/s)
+  assert.match(css, /\.researchos-badge-publication[^{]*\{/s)
+  assert.match(css, /\.researchos-badge-published[^{]*\{/s)
+  assert.doesNotMatch(css, /\.researchos-badge-accepted[^{]*\{/s)
   assert.match(css, /@media\s+print[\s\S]*background:\s*#fff\s*!important/)
 })
 
@@ -161,11 +166,12 @@ test("normalized Markdown exposes only allowlisted frontmatter", async () => {
   const output = createPublicationMarkdown(
     "---\ntitle: Original\nlegacy_path: C:\\\\private\\source.md\n---\n# Original\n\nBody.\n",
     {
-      type: "concept",
+      type: "project",
       title: "Original",
       status: "active",
-      id: "CONCEPT-D-0001",
-      concept_type: "descriptor",
+      project_id: "published-project",
+      project_status: "completed",
+      publication_status: "published",
       related_projects: "project-one, project-two",
       legacy_path: "C:\\private\\source.md",
       imported_at: "2026-01-01",
@@ -176,10 +182,23 @@ test("normalized Markdown exposes only allowlisted frontmatter", async () => {
 
   assert.match(
     output,
-    /^---\ntype: concept\ntitle: Original\nstatus: active\nid: CONCEPT-D-0001\nconcept_type: descriptor\n/,
+    /^---\ntype: project\ntitle: Original\nstatus: active\nproject_id: published-project\nproject_status: completed\npublication_status: published\n/,
   )
   assert.match(output, /related_projects:\n  - project-one\n  - project-two/)
   assert.doesNotMatch(output, /legacy_path|imported_at|source_refs|password|C:\\/i)
+})
+
+test("normalized Project Markdown omits a non-canonical accepted publication status", async () => {
+  const { createPublicationMarkdown } = await import("./src/emitters/PublicationMarkdown.ts")
+  const output = createPublicationMarkdown("# Invalid lifecycle\n", {
+    type: "project",
+    title: "Invalid lifecycle",
+    status: "active",
+    project_status: "ongoing",
+    publication_status: "accepted",
+  })
+
+  assert.doesNotMatch(output, /^publication_status:/m)
 })
 
 test("normalized Markdown preserves scientific syntax and redacts machine-local locators", async () => {
@@ -355,8 +374,9 @@ test("Home dashboard groups build-time canonical data without body scraping", as
       frontmatter: {
         type: "project",
         title,
-        project_id: `submitted-${index}`,
-        project_status: "submitted",
+        project_id: `completed-${index}`,
+        project_status: "completed",
+        publication_status: "published",
       },
     })),
     {
@@ -388,15 +408,31 @@ test("Home dashboard groups build-time canonical data without body scraping", as
   const data = buildHomeDashboardData(files as never[])
 
   assert.equal(data.projects.ongoing.length, 4)
-  assert.equal(data.projects.submitted.length, 2)
+  assert.equal(data.projects.completed.length, 2)
   assert.equal(data.projects.betaTest.length, 0)
   assert.deepEqual(data.projects.ongoing[0].counts, { concepts: 1, molecules: 1 })
+  assert.equal(data.projects.ongoing[0].publicationStatus, "none")
+  assert.equal(data.projects.completed[0].publicationStatus, "published")
   assert.equal(data.concepts.descriptor.length, 1)
   assert.equal(data.concepts.mechanism.length, 1)
   assert.equal(data.concepts.outcome.length, 0)
   assert.equal(data.moleculeCount, 1)
   assert.equal(data.openQuestions.length, 6)
   assert.equal(data.literatureCount, 0)
+
+  const invalidPublication = buildHomeDashboardData([
+    {
+      slug: "projects/invalid-publication",
+      frontmatter: {
+        type: "project",
+        title: "Invalid publication",
+        project_id: "invalid-publication",
+        project_status: "ongoing",
+        publication_status: "accepted",
+      },
+    },
+  ] as never[])
+  assert.equal(invalidPublication.projects.ongoing[0].publicationStatus, "none")
 })
 
 test("Explorer project metadata derives status-first navigation from canonical frontmatter", async () => {
@@ -404,7 +440,7 @@ test("Explorer project metadata derives status-first navigation from canonical f
   const files = [
     {
       slug: "projects/beta/overview",
-      frontmatter: { type: "project", title: "Beta", project_status: "submitted" },
+      frontmatter: { type: "project", title: "Beta", project_status: "completed" },
     },
     {
       slug: "projects/zeta/overview",
@@ -445,7 +481,7 @@ test("Explorer project metadata derives status-first navigation from canonical f
       folderPath: "projects/beta/index",
       overviewSlug: "projects/beta/overview",
       title: "Beta",
-      status: "submitted",
+      status: "completed",
     },
     {
       folderPath: "projects/gamma/index",
@@ -476,7 +512,7 @@ test("Explorer quick access renders canonical ongoing projects as direct Overvie
       allFiles: [
         {
           slug: "projects/beta/overview",
-          frontmatter: { type: "project", title: "Beta", project_status: "submitted" },
+          frontmatter: { type: "project", title: "Beta", project_status: "completed" },
         },
         {
           slug: "projects/zeta/overview",
@@ -564,12 +600,27 @@ test("page presentation exposes badges and downloads only for canonical content"
     title: "EMS",
     status: "active",
     project_status: "ongoing",
+    publication_status: "submitted",
     project_id: "dft-lifsi-organic-solvents",
   })
 
-  assert.deepEqual(project?.badges, ["ONGOING"])
+  assert.deepEqual(project?.badges, [
+    { label: "ONGOING", axis: "research" },
+    { label: "SUBMITTED", axis: "publication" },
+  ])
   assert.deepEqual(project?.metadata, ["dft-lifsi-organic-solvents"])
   assert.equal(project?.markdownPath, "downloads/markdown/projects/ems/overview.md")
+
+  const invalidPublication = getPagePresentation("projects/invalid/overview", {
+    type: "project",
+    title: "Invalid",
+    status: "active",
+    project_status: "ongoing",
+    publication_status: "accepted",
+    project_id: "invalid-publication",
+  })
+  assert.deepEqual(invalidPublication?.badges, [{ label: "ONGOING", axis: "research" }])
+
   assert.equal(getPagePresentation("home", { type: "home", status: "active" }), null)
   assert.equal(getPagePresentation("_views/projects", { type: "view", status: "active" }), null)
   assert.equal(
@@ -622,7 +673,8 @@ test("page action component renders canonical download and print controls but no
           type: "project",
           title: "EMS",
           status: "active",
-          project_status: "ongoing",
+          project_status: "completed",
+          publication_status: "published",
         },
       },
     } as never),
@@ -636,7 +688,14 @@ test("page action component renders canonical download and print controls but no
 
   assert.match(projectHtml, /downloads\/markdown\/projects\/ems\/overview\.md/)
   assert.match(projectHtml, /data-researchos-print/)
-  assert.match(projectHtml, /class="researchos-badge researchos-badge-ongoing"[^>]*>ONGOING</)
+  assert.match(
+    projectHtml,
+    /class="researchos-badge researchos-badge-research researchos-badge-completed"[^>]*>COMPLETED</,
+  )
+  assert.match(
+    projectHtml,
+    /class="researchos-badge researchos-badge-publication researchos-badge-published"[^>]*>PUBLISHED</,
+  )
   assert.equal(homeHtml, "")
 })
 

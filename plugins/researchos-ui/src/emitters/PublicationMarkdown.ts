@@ -32,6 +32,7 @@ const FRONTMATTER_ALLOWLIST = [
   "id",
   "molecule_id",
   "project_status",
+  "publication_status",
   "concept_type",
   "epistemic_status",
   "evidence_type",
@@ -40,6 +41,8 @@ const FRONTMATTER_ALLOWLIST = [
   "aliases",
   "related_projects",
 ] as const
+
+const PROJECT_PUBLICATION_STATUSES = new Set(["none", "drafting", "submitted", "published"])
 
 const WINDOWS_ABSOLUTE_PATH = /\b[A-Za-z]:\\(?:[^\\/:*?"<>|\s`]+\\)*[^\\/:*?"<>|\s`,;:!?)]*/g
 const OWNER_CREDENTIAL = /OWNER(?:_TOKEN)?\s*[:=]\s*[^\s`]+/gi
@@ -84,6 +87,15 @@ function safeFrontmatter(
     if (key === "related_projects") {
       const projects = normalizeRelatedProjects(value)
       if (projects) result[key] = projects
+      continue
+    }
+
+    if (
+      key === "publication_status" &&
+      String(frontmatter?.type ?? "").toLowerCase() === "project"
+    ) {
+      const publicationStatus = String(value).trim().toLowerCase()
+      if (PROJECT_PUBLICATION_STATUSES.has(publicationStatus)) result[key] = publicationStatus
       continue
     }
 
