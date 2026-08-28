@@ -1,4 +1,5 @@
 export { PublicationScope } from "./filters/PublicationScope"
 export { CanonicalTitle } from "./transformers/CanonicalTitle"
+export { DerivedViewRoutes } from "./transformers/DerivedViewRoutes"
 export { PublicationArtifacts } from "./emitters/PublicationMarkdown"
 export { HomePage } from "./pageTypes/HomePage"

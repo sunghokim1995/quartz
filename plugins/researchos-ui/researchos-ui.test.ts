@@ -1,12 +1,16 @@
 import assert from "node:assert/strict"
+import { execFile } from "node:child_process"
 import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import path from "node:path"
+import { promisify } from "node:util"
 import test from "node:test"
 import { build } from "esbuild"
 import { sassPlugin } from "esbuild-sass-plugin"
 import { transform } from "lightningcss"
 import render from "preact-render-to-string"
+
+const execFileAsync = promisify(execFile)
 
 async function compileVisualCss() {
   const result = await build({
@@ -128,6 +132,21 @@ test("publication scope excludes utility and draft pages while retaining canonic
   const cases = [
     { path: "_templates/Project.md", frontmatter: { type: "template" }, want: false },
     { path: "_views/Projects.md", frontmatter: { type: "view", generated: true }, want: false },
+    {
+      path: "_views/Completed Research.md",
+      frontmatter: { type: "view", status: "active", generated: true },
+      want: true,
+    },
+    {
+      path: "_views/Publications.md",
+      frontmatter: { type: "view", status: "active", generated: true },
+      want: true,
+    },
+    {
+      path: "_views/Active Research.md",
+      frontmatter: { type: "view", status: "active", generated: true },
+      want: false,
+    },
     { path: "Ideas/Maybe.md", frontmatter: { type: "idea", status: "draft" }, want: false },
     {
       path: "Home.md",
@@ -149,6 +168,70 @@ test("publication scope excludes utility and draft pages while retaining canonic
     )
   }
 })
+
+test(
+  "production build projects only the two allowlisted canonical views onto clean routes",
+  { timeout: 120_000 },
+  async () => {
+    const fixtureRoot = await mkdtemp(path.join(tmpdir(), "researchos-view-fixture-"))
+    const outputRoot = await mkdtemp(path.join(tmpdir(), "researchos-view-output-"))
+
+    try {
+      await mkdir(path.join(fixtureRoot, "_views"), { recursive: true })
+      await mkdir(path.join(fixtureRoot, "Projects", "Synthetic Published"), { recursive: true })
+      await writeFile(
+        path.join(fixtureRoot, "Home.md"),
+        "---\ntype: home\ntitle: Home\nstatus: active\ngenerated: true\n---\n# Home\n",
+      )
+      await writeFile(
+        path.join(fixtureRoot, "Projects", "Synthetic Published", "Overview.md"),
+        "---\ntype: project\nproject_id: synthetic-published\ntitle: Synthetic Published\nstatus: active\nproject_status: completed\npublication_status: published\n---\n# Synthetic Published\n",
+      )
+      await writeFile(
+        path.join(fixtureRoot, "_views", "Completed Research.md"),
+        "---\ntype: view\ntitle: Completed Research\nstatus: active\ngenerated: true\n---\n# Completed Research\n\n- [[Projects/Synthetic Published/Overview|Synthetic Published]]\n",
+      )
+      await writeFile(
+        path.join(fixtureRoot, "_views", "Publications.md"),
+        "---\ntype: view\ntitle: Publications\nstatus: active\ngenerated: true\n---\n# Publications\n\n## PUBLISHED\n\n- [[Projects/Synthetic Published/Overview|Synthetic Published]]\n",
+      )
+      await writeFile(
+        path.join(fixtureRoot, "_views", "Active Research.md"),
+        "---\ntype: view\ntitle: Active Research\nstatus: active\ngenerated: true\n---\n# Active Research\n\nC:\\private\\must-not-publish.txt\n",
+      )
+
+      await execFileAsync(
+        process.execPath,
+        [
+          "quartz/bootstrap-cli.mjs",
+          "build",
+          "--concurrency",
+          "1",
+          "-d",
+          fixtureRoot,
+          "-o",
+          outputRoot,
+        ],
+        { cwd: path.resolve("."), maxBuffer: 10 * 1024 * 1024 },
+      )
+
+      const completed = await readFile(path.join(outputRoot, "completed-research.html"), "utf8")
+      const publications = await readFile(path.join(outputRoot, "publications.html"), "utf8")
+      assert.match(completed, /Completed Research/)
+      assert.match(completed, /Synthetic Published/)
+      assert.match(publications, /Publications/)
+      assert.match(publications, /PUBLISHED/)
+      await assert.rejects(access(path.join(outputRoot, "active-research.html")))
+      await assert.rejects(access(path.join(outputRoot, "_views")))
+
+      const publicText = `${completed}\n${publications}`
+      assert.doesNotMatch(publicText, /C:\\private|must-not-publish/)
+    } finally {
+      await rm(fixtureRoot, { recursive: true, force: true })
+      await rm(outputRoot, { recursive: true, force: true })
+    }
+  },
+)
 
 test("Markdown downloads include only public canonical page types", async () => {
   const { isDownloadableCanonical } = await import("./src/emitters/PublicationMarkdown.ts")

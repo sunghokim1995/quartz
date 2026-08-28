@@ -10,7 +10,6 @@ configuration:
   ignorePatterns:
     - .obsidian
     - _templates
-    - _views
   theme:
     fontOrigin: googleFonts
     cdnCaching: true

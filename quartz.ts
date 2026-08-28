@@ -10,6 +10,7 @@ import { PublicationArtifacts } from "./plugins/researchos-ui/src/emitters/Publi
 import { PublicationScope } from "./plugins/researchos-ui/src/filters/PublicationScope"
 import { HomePage } from "./plugins/researchos-ui/src/pageTypes/HomePage"
 import { CanonicalTitle } from "./plugins/researchos-ui/src/transformers/CanonicalTitle"
+import { DerivedViewRoutes } from "./plugins/researchos-ui/src/transformers/DerivedViewRoutes"
 
 componentRegistry.setOptionOverrides("@quartz-community/explorer", {
   title: "탐색",
@@ -99,7 +100,7 @@ researchOSLayout.byPageType.content = {
   ],
 }
 
-config.plugins.transformers.push(CanonicalTitle())
+config.plugins.transformers.push(DerivedViewRoutes(), CanonicalTitle())
 config.plugins.filters.push(PublicationScope())
 config.plugins.pageTypes ??= []
 config.plugins.pageTypes.push(HomePage())
