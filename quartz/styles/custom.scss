@@ -1,3 +1,1124 @@
 @use "./variables.scss" as *;
 
-// put your custom CSS here!
+:root {
+  --ros-graphite: #18171d;
+  --ros-silver: #b3b3ba;
+  --ros-cobalt: #1c28c7;
+  --ros-ui-font: system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
+  --ros-bg-deep: color-mix(in srgb, #fff 96%, var(--ros-silver));
+  --ros-bg-elevated: color-mix(in srgb, #fff 88%, var(--ros-silver));
+  --ros-glass-thin:
+    linear-gradient(135deg, color-mix(in srgb, #fff 58%, transparent), transparent 42%),
+    color-mix(in srgb, #fff 82%, transparent);
+  --ros-glass-regular:
+    radial-gradient(
+      circle at 0 0,
+      color-mix(in srgb, var(--ros-cobalt) 5%, transparent),
+      transparent 52%
+    ),
+    linear-gradient(135deg, color-mix(in srgb, #fff 62%, transparent), transparent 46%),
+    color-mix(in srgb, #fff 74%, transparent);
+  --ros-glass-strong:
+    radial-gradient(
+      circle at 0 0,
+      color-mix(in srgb, var(--ros-cobalt) 7%, transparent),
+      transparent 54%
+    ),
+    linear-gradient(135deg, color-mix(in srgb, #fff 68%, transparent), transparent 48%),
+    color-mix(in srgb, #fff 68%, transparent);
+  --ros-material-bg: var(--ros-glass-thin);
+  --ros-material-bg-hover:
+    linear-gradient(135deg, color-mix(in srgb, #fff 68%, transparent), transparent 44%),
+    color-mix(in srgb, #fff 91%, transparent);
+  --ros-glass-bg: var(--ros-glass-regular);
+  --ros-glass-border: color-mix(in srgb, var(--ros-graphite) 18%, transparent);
+  --ros-glass-highlight: color-mix(in srgb, #fff 74%, transparent);
+  --ros-glass-shadow:
+    0 20px 52px color-mix(in srgb, var(--ros-graphite) 13%, transparent),
+    inset 0 1px 0 var(--ros-glass-highlight),
+    inset 1px 0 0 color-mix(in srgb, #fff 32%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--ros-graphite) 8%, transparent);
+  --ros-material-shadow:
+    0 12px 32px color-mix(in srgb, var(--ros-graphite) 7%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 54%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--ros-graphite) 6%, transparent);
+  --ros-glass-radius: 20px;
+  --ros-glass-blur: 26px;
+  --ros-glass-saturation: 138%;
+  --ros-material-radius: 18px;
+  --ros-accent-soft: color-mix(in srgb, var(--ros-cobalt) 9%, transparent);
+  --ros-text-primary: color-mix(in srgb, var(--ros-graphite) 88%, #000);
+  --ros-text-secondary: color-mix(in srgb, var(--ros-graphite) 58%, var(--ros-silver));
+  --ros-accent: color-mix(in srgb, var(--ros-cobalt) 38%, var(--ros-text-primary));
+  --ros-accent-hover: color-mix(in srgb, var(--ros-accent) 88%, var(--ros-text-primary));
+  --ros-muted: var(--ros-text-secondary);
+  --secondary: var(--ros-accent);
+  --tertiary: var(--ros-accent-hover);
+  --ros-ambient-light: none;
+  --researchos-hairline: color-mix(in srgb, var(--ros-graphite) 16%, transparent);
+  --researchos-surface: var(--ros-material-bg);
+  --researchos-surface-strong: var(--ros-material-bg-hover);
+}
+
+:root[saved-theme="dark"] {
+  --ros-bg-deep: var(--ros-graphite);
+  --ros-bg-elevated: color-mix(in srgb, var(--ros-graphite) 78%, transparent);
+  --ros-glass-thin:
+    radial-gradient(
+      circle at 0 0,
+      color-mix(in srgb, var(--ros-cobalt) 3%, transparent),
+      transparent 56%
+    ),
+    linear-gradient(135deg, color-mix(in srgb, var(--ros-silver) 5%, transparent), transparent 44%),
+    color-mix(in srgb, var(--ros-graphite) 64%, transparent);
+  --ros-glass-regular:
+    radial-gradient(
+      circle at 0 0,
+      color-mix(in srgb, var(--ros-cobalt) 8%, transparent),
+      transparent 54%
+    ),
+    linear-gradient(135deg, color-mix(in srgb, var(--ros-silver) 7%, transparent), transparent 46%),
+    color-mix(in srgb, var(--ros-graphite) 48%, transparent);
+  --ros-glass-strong:
+    radial-gradient(
+      circle at 0 0,
+      color-mix(in srgb, var(--ros-cobalt) 11%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(135deg, color-mix(in srgb, var(--ros-silver) 9%, transparent), transparent 48%),
+    color-mix(in srgb, var(--ros-graphite) 42%, transparent);
+  --ros-material-bg: var(--ros-glass-thin);
+  --ros-material-bg-hover:
+    radial-gradient(
+      circle at 0 0,
+      color-mix(in srgb, var(--ros-cobalt) 5%, transparent),
+      transparent 58%
+    ),
+    linear-gradient(135deg, color-mix(in srgb, var(--ros-silver) 7%, transparent), transparent 46%),
+    color-mix(in srgb, var(--ros-graphite) 72%, transparent);
+  --ros-glass-bg: var(--ros-glass-regular);
+  --ros-glass-border: color-mix(in srgb, var(--ros-silver) 24%, transparent);
+  --ros-glass-highlight: color-mix(in srgb, #fff 14%, transparent);
+  --ros-glass-shadow:
+    0 26px 72px color-mix(in srgb, #000 48%, transparent), inset 0 1px 0 var(--ros-glass-highlight),
+    inset 1px 0 0 color-mix(in srgb, var(--ros-silver) 8%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, #000 36%, transparent);
+  --ros-material-shadow:
+    0 15px 38px color-mix(in srgb, #000 24%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--ros-silver) 9%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, #000 22%, transparent);
+  --ros-accent-soft: color-mix(in srgb, var(--ros-cobalt) 18%, transparent);
+  --ros-text-primary: color-mix(in srgb, var(--ros-silver) 62%, #fff);
+  --ros-text-secondary: var(--ros-silver);
+  --ros-muted: color-mix(in srgb, var(--ros-silver) 78%, transparent);
+  --ros-ambient-light: radial-gradient(
+    circle at 7% 2%,
+    color-mix(in srgb, var(--ros-cobalt) 9%, transparent),
+    transparent 34rem
+  );
+  --researchos-hairline: color-mix(in srgb, var(--ros-silver) 14%, transparent);
+}
+
+html {
+  background: var(--ros-bg-deep);
+}
+
+body {
+  color: var(--ros-text-primary);
+  background-color: var(--ros-bg-deep);
+  background-image: var(--ros-ambient-light);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  font-family: var(--ros-ui-font);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.article-title {
+  font-family: var(--ros-ui-font);
+}
+
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--ros-accent);
+  outline-offset: 3px;
+}
+
+.page[data-frame="default"] {
+  max-width: 1420px;
+
+  > #quartz-body {
+    column-gap: 1.5rem;
+
+    @media all and (min-width: 1200px) {
+      grid-template-columns: 280px minmax(0, 1fr) 256px;
+    }
+
+    @media all and (min-width: 800px) and (max-width: 1199px) {
+      grid-template-columns: 260px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+    }
+
+    .sidebar.left {
+      background: linear-gradient(
+        90deg,
+        var(--ros-bg-elevated),
+        color-mix(in srgb, var(--ros-bg-elevated) 72%, transparent)
+      );
+      box-shadow:
+        inset -1px 0 0 color-mix(in srgb, var(--ros-silver) 10%, transparent),
+        14px 0 36px color-mix(in srgb, #000 8%, transparent);
+    }
+
+    .sidebar.right {
+      > .toc {
+        order: 0;
+        padding: 1rem 1rem 1.05rem;
+        border: 1px solid var(--ros-glass-border);
+        border-radius: var(--ros-glass-radius);
+        background: var(--ros-glass-strong);
+        box-shadow: var(--ros-glass-shadow);
+        -webkit-backdrop-filter: blur(var(--ros-glass-blur)) saturate(var(--ros-glass-saturation));
+        backdrop-filter: blur(var(--ros-glass-blur)) saturate(var(--ros-glass-saturation));
+        scrollbar-color: color-mix(in srgb, var(--ros-silver) 34%, transparent) transparent;
+        scrollbar-width: thin;
+
+        .toc-content a.in-view {
+          color: var(--ros-text-primary);
+          background: var(--ros-accent-soft);
+          box-shadow: inset 2px 0 0 var(--ros-accent);
+        }
+
+        .toc-content::-webkit-scrollbar {
+          width: 5px;
+        }
+
+        .toc-content::-webkit-scrollbar-thumb {
+          border-radius: 999px;
+          background: color-mix(in srgb, var(--ros-silver) 28%, transparent);
+        }
+      }
+
+      > .backlinks {
+        order: 1;
+        margin-top: 1rem;
+        padding: 0.9rem 1rem;
+        border: 1px solid var(--researchos-hairline);
+        border-radius: calc(var(--ros-material-radius) - 4px);
+        background: var(--ros-glass-thin);
+        box-shadow: var(--ros-material-shadow);
+        -webkit-backdrop-filter: blur(8px) saturate(112%);
+        backdrop-filter: blur(8px) saturate(112%);
+      }
+    }
+  }
+}
+
+.sidebar.left .search-button {
+  border: 1px solid var(--ros-glass-border);
+  background: var(--ros-glass-strong);
+  box-shadow:
+    inset 0 1px 0 var(--ros-glass-highlight),
+    inset 1px 0 0 color-mix(in srgb, var(--ros-silver) 8%, transparent),
+    0 12px 32px color-mix(in srgb, #000 22%, transparent);
+  -webkit-backdrop-filter: blur(var(--ros-glass-blur)) saturate(var(--ros-glass-saturation));
+  backdrop-filter: blur(var(--ros-glass-blur)) saturate(var(--ros-glass-saturation));
+}
+
+button.darkmode,
+button.readermode,
+button.mobile-explorer {
+  border: 1px solid var(--ros-glass-border);
+  background: var(--ros-glass-regular);
+  box-shadow:
+    inset 0 1px 0 var(--ros-glass-highlight),
+    0 8px 22px color-mix(in srgb, #000 18%, transparent);
+  -webkit-backdrop-filter: blur(calc(var(--ros-glass-blur) * 0.72))
+    saturate(var(--ros-glass-saturation));
+  backdrop-filter: blur(calc(var(--ros-glass-blur) * 0.72)) saturate(var(--ros-glass-saturation));
+}
+
+.sidebar.left .search-button {
+  border-radius: 12px;
+}
+
+button.darkmode,
+button.readermode,
+button.mobile-explorer {
+  border-radius: 999px;
+}
+
+.explorer-content a[aria-current="page"],
+.explorer-content a.active {
+  border-radius: 7px;
+  color: var(--ros-accent-hover);
+  background: var(--ros-accent-soft);
+  box-shadow:
+    inset 2px 0 0 var(--ros-accent),
+    inset 0 1px 0 color-mix(in srgb, var(--ros-silver) 8%, transparent);
+}
+
+.explorer-content a:not(.active) {
+  color: color-mix(in srgb, var(--ros-text-secondary) 82%, transparent);
+}
+
+.page-title a,
+.breadcrumb-container a,
+.page[data-frame="default"] .sidebar.right > .toc .toc-content a:not(.in-view),
+.page[data-frame="default"] .sidebar.right > .backlinks a {
+  color: var(--ros-accent);
+
+  &:hover {
+    color: var(--ros-accent-hover);
+  }
+}
+
+.page[data-frame="default"] .center {
+  min-width: 0;
+
+  > .page-header,
+  > article,
+  > .page-footer {
+    width: min(100%, 76ch);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  > article {
+    font-size: 1rem;
+
+    p,
+    li,
+    tbody {
+      line-height: 1.7;
+    }
+
+    p {
+      margin: 0.9em 0;
+    }
+
+    h2 {
+      font-size: clamp(1.55rem, 2.2vw, 1.75rem);
+      line-height: 1.25;
+      margin-top: 2.4rem;
+    }
+
+    h3 {
+      font-size: clamp(1.2rem, 1.7vw, 1.32rem);
+      line-height: 1.35;
+      margin-top: 1.9rem;
+    }
+  }
+}
+
+.article-title {
+  max-width: 24ch;
+  font-size: clamp(2.2rem, 4vw, 2.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  margin: 1.15rem 0 0.75rem;
+  color: var(--ros-text-primary);
+}
+
+.breadcrumbs,
+.content-meta {
+  color: var(--ros-muted);
+  font-size: 0.88rem;
+}
+
+.researchos-page-meta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem 0.8rem;
+  margin: 1rem 0 1.65rem;
+  padding: 0.48rem;
+  border: 1px solid var(--ros-glass-border);
+  border-radius: var(--ros-glass-radius);
+  background: var(--ros-glass-regular);
+  box-shadow: var(--ros-glass-shadow);
+  -webkit-backdrop-filter: blur(var(--ros-glass-blur)) saturate(var(--ros-glass-saturation));
+  backdrop-filter: blur(var(--ros-glass-blur)) saturate(var(--ros-glass-saturation));
+}
+
+.researchos-object-meta,
+.researchos-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.researchos-object-meta code {
+  padding: 0 0.35rem;
+  color: var(--ros-muted);
+  background: transparent;
+  font-size: 0.78rem;
+}
+
+.researchos-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding: 0.12rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--ros-silver) 34%, transparent);
+  border-radius: 999px;
+  color: var(--ros-text-primary);
+  background: color-mix(in srgb, var(--ros-silver) 10%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--ros-silver) 18%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, #000 18%, transparent);
+  font-family: var(--codeFont);
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.055em;
+}
+
+.researchos-badge-ongoing {
+  border-color: color-mix(
+    in srgb,
+    var(--ros-accent) 68%,
+    color-mix(in srgb, var(--ros-silver) 34%, transparent)
+  );
+  color: color-mix(in srgb, var(--ros-silver) 38%, #fff);
+  background: color-mix(in srgb, var(--ros-cobalt) 22%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--ros-silver) 22%, transparent),
+    0 5px 14px color-mix(in srgb, var(--ros-accent) 12%, transparent);
+}
+
+.researchos-badge-submitted {
+  border-color: color-mix(in srgb, var(--ros-silver) 42%, transparent);
+  color: var(--ros-text-secondary);
+  background: color-mix(in srgb, var(--ros-silver) 13%, transparent);
+}
+
+.researchos-page-actions a,
+.researchos-page-actions button {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.55rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--ros-glass-border);
+  border-radius: 12px;
+  color: var(--ros-text-secondary);
+  background: color-mix(in srgb, var(--ros-silver) 7%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--ros-silver) 16%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, #000 16%, transparent);
+  font: 600 0.82rem/1 var(--ros-ui-font);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    transform 0.15s ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--ros-accent) 38%, var(--ros-glass-border));
+    color: var(--ros-text-primary);
+    background: color-mix(in srgb, var(--ros-silver) 12%, transparent);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    background: color-mix(in srgb, var(--ros-graphite) 62%, transparent);
+    transform: translateY(0);
+  }
+}
+
+.researchos-mobile-toc {
+  display: none;
+  flex-basis: 100%;
+  border: 1px solid var(--ros-glass-border);
+  border-radius: calc(var(--ros-glass-radius) - 4px);
+  background: var(--ros-glass-regular);
+  box-shadow:
+    inset 0 1px 0 var(--ros-glass-highlight),
+    inset 1px 0 0 color-mix(in srgb, var(--ros-silver) 7%, transparent);
+  -webkit-backdrop-filter: blur(calc(var(--ros-glass-blur) * 0.72))
+    saturate(var(--ros-glass-saturation));
+  backdrop-filter: blur(calc(var(--ros-glass-blur) * 0.72)) saturate(var(--ros-glass-saturation));
+
+  summary {
+    min-height: 2.75rem;
+    padding: 0.7rem 0.8rem;
+    box-sizing: border-box;
+    cursor: pointer;
+    font-weight: 650;
+  }
+
+  nav {
+    padding: 0 0.8rem 0.7rem;
+  }
+
+  ol {
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+
+  li {
+    margin: 0.25rem 0;
+    line-height: 1.35;
+  }
+
+  .depth-2,
+  .depth-3 {
+    margin-left: 0.75rem;
+  }
+
+  @media all and (max-width: 1199px) {
+    display: block;
+  }
+}
+
+@media all and (max-width: 1199px) {
+  .page[data-frame="default"] .sidebar.right > .toc {
+    display: none;
+  }
+}
+
+.table-container {
+  margin: 1.35rem 0;
+  border: 1px solid color-mix(in srgb, var(--ros-silver) 18%, transparent);
+  border-radius: calc(var(--ros-material-radius) - 4px);
+  background: var(--ros-material-bg);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--ros-silver) 10%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, #000 18%, transparent);
+
+  > table {
+    min-width: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: 0.92rem;
+    font-variant-numeric: tabular-nums;
+
+    th {
+      color: var(--ros-text-primary);
+      background: color-mix(in srgb, var(--ros-silver) 9%, transparent);
+      border-bottom-color: color-mix(in srgb, var(--ros-silver) 22%, transparent);
+    }
+
+    th,
+    td {
+      padding: 0.55rem 0.72rem;
+      vertical-align: top;
+    }
+
+    tbody tr:nth-child(even) {
+      background: color-mix(in srgb, var(--ros-silver) 3%, transparent);
+    }
+  }
+}
+
+article {
+  .unpublished-reference {
+    color: var(--ros-muted);
+    border-bottom: 1px dotted color-mix(in srgb, var(--ros-silver) 54%, transparent);
+    cursor: help;
+  }
+
+  pre {
+    border-color: var(--researchos-hairline);
+    border-radius: 0.5rem;
+  }
+
+  :not(pre) > code {
+    background: color-mix(in srgb, var(--ros-silver) 10%, transparent);
+  }
+
+  blockquote {
+    margin: 1.25rem 0;
+    padding: 0.1rem 0 0.1rem 1rem;
+    border-left-width: 3px;
+    background: color-mix(in srgb, var(--ros-cobalt) 5%, transparent);
+  }
+
+  .katex-display {
+    margin: 1.35rem 0;
+    padding: 0.25rem 0;
+  }
+
+  a.internal[href*="/concepts/"] {
+    color: var(--ros-accent);
+    border-bottom: 1px solid color-mix(in srgb, var(--ros-accent) 46%, transparent);
+    border-radius: 6px;
+    background: transparent;
+
+    &:hover {
+      color: var(--ros-accent-hover);
+      border-color: color-mix(in srgb, var(--ros-accent) 58%, var(--ros-glass-border));
+      background: color-mix(in srgb, var(--ros-cobalt) 10%, transparent);
+      box-shadow: inset 0 1px 0 var(--ros-glass-highlight);
+    }
+  }
+
+  a.internal[href*="/molecules/"] {
+    color: var(--ros-accent);
+    border-bottom: 1px dashed color-mix(in srgb, var(--ros-silver) 48%, transparent);
+    border-radius: 6px;
+    background: transparent;
+
+    &:hover {
+      color: var(--ros-accent-hover);
+      border-color: color-mix(in srgb, var(--ros-accent) 48%, var(--ros-glass-border));
+      background: color-mix(in srgb, var(--ros-cobalt) 8%, transparent);
+      box-shadow: inset 0 1px 0 var(--ros-glass-highlight);
+    }
+  }
+}
+
+.page[data-frame="full-width"] {
+  max-width: 1500px;
+
+  > #quartz-body {
+    padding: 0 2rem;
+  }
+
+  .center.full-width > hr,
+  .center.full-width > .page-footer:empty {
+    display: none;
+  }
+}
+
+.researchos-home {
+  width: min(100%, 1240px);
+  margin: 0 auto;
+  padding: clamp(3.5rem, 8vw, 7.5rem) 0 4rem;
+}
+
+.researchos-hero {
+  display: grid;
+  max-width: 900px;
+  gap: 1.1rem;
+  margin-bottom: clamp(4rem, 8vw, 7rem);
+
+  h1 {
+    margin: 0;
+    font-size: clamp(4rem, 11vw, 8.25rem);
+    line-height: 0.88;
+    letter-spacing: -0.07em;
+  }
+}
+
+.researchos-eyebrow,
+.researchos-card-kicker {
+  margin: 0;
+  color: var(--ros-accent);
+  font-family: var(--codeFont);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.researchos-hero-copy {
+  max-width: 54ch;
+  margin: 0;
+  color: var(--ros-muted);
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  line-height: 1.6;
+}
+
+.researchos-home-section {
+  margin: 0 0 clamp(4rem, 7vw, 6rem);
+}
+
+.researchos-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.9rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--researchos-hairline);
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.65rem, 3vw, 2.3rem);
+    letter-spacing: -0.025em;
+  }
+
+  > span {
+    color: var(--ros-muted);
+    font-family: var(--codeFont);
+  }
+}
+
+.researchos-project-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.researchos-project-card,
+.researchos-knowledge-card {
+  box-sizing: border-box;
+  min-width: 0;
+  border: 1px solid var(--ros-glass-border);
+  border-radius: var(--ros-material-radius);
+  color: var(--ros-text-primary);
+  background: var(--ros-material-bg);
+  box-shadow: var(--ros-material-shadow);
+}
+
+.researchos-project-card {
+  display: flex;
+  min-height: 230px;
+  padding: 1.25rem;
+  flex-direction: column;
+  align-items: flex-start;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--ros-silver) 34%, transparent);
+    color: var(--ros-text-primary);
+    background: var(--ros-material-bg-hover);
+    box-shadow:
+      0 18px 44px color-mix(in srgb, #000 28%, transparent),
+      inset 0 1px 0 color-mix(in srgb, var(--ros-silver) 12%, transparent),
+      inset 1px 0 0 color-mix(in srgb, var(--ros-cobalt) 6%, transparent);
+    transform: translateY(-1px);
+  }
+
+  h3 {
+    margin: 1.15rem 0 0.45rem;
+    font-size: 1.35rem;
+    line-height: 1.18;
+  }
+
+  > code {
+    padding: 0;
+    color: var(--ros-muted);
+    background: transparent;
+    font-size: 0.7rem;
+    overflow-wrap: anywhere;
+  }
+
+  dl {
+    display: flex;
+    width: 100%;
+    gap: 1.5rem;
+    margin: auto 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--researchos-hairline);
+  }
+
+  dl > div {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  dt {
+    color: var(--ros-muted);
+    font-size: 0.72rem;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--ros-text-primary);
+    font-family: var(--codeFont);
+    font-size: 1.05rem;
+  }
+}
+
+.researchos-empty-state {
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  border: 1px dashed var(--researchos-hairline);
+  border-radius: calc(var(--ros-material-radius) - 4px);
+  color: var(--ros-muted);
+  background: var(--ros-glass-thin);
+}
+
+.researchos-knowledge-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+  gap: 1rem;
+}
+
+.researchos-knowledge-card {
+  display: block;
+  padding: 1.4rem;
+
+  h3 {
+    margin: 0.7rem 0 1.2rem;
+    font-size: 1.55rem;
+  }
+}
+
+.researchos-concept-group {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 1rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--researchos-hairline);
+
+  > span {
+    color: var(--ros-muted);
+    font-family: var(--codeFont);
+  }
+
+  ul {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.85rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    line-height: 1.35;
+  }
+}
+
+.researchos-knowledge-link {
+  display: flex;
+  flex-direction: column;
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s ease;
+
+  > strong {
+    margin-top: auto;
+    color: var(--ros-text-primary);
+    font: 650 clamp(3rem, 6vw, 5.5rem) / 0.9 var(--headerFont);
+  }
+
+  > span {
+    margin-top: 0.65rem;
+    color: var(--ros-muted);
+  }
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--ros-silver) 34%, transparent);
+    color: var(--ros-text-primary);
+    background: var(--ros-material-bg-hover);
+    box-shadow:
+      0 18px 44px color-mix(in srgb, #000 28%, transparent),
+      inset 0 1px 0 color-mix(in srgb, var(--ros-silver) 12%, transparent);
+    transform: translateY(-1px);
+  }
+}
+
+.researchos-question-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ros-glass-border);
+  border-radius: var(--ros-material-radius);
+  background: var(--ros-glass-thin);
+  box-shadow: var(--ros-material-shadow);
+  list-style: none;
+  counter-reset: research-question;
+
+  li {
+    position: relative;
+    padding: 1rem 1rem 1rem 2.7rem;
+    border-bottom: 1px solid var(--researchos-hairline);
+    counter-increment: research-question;
+
+    &::before {
+      content: counter(research-question, decimal-leading-zero);
+      position: absolute;
+      left: 0.25rem;
+      color: var(--ros-muted);
+      font-family: var(--codeFont);
+      font-size: 0.72rem;
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--ros-cobalt) 5%, transparent);
+    }
+  }
+}
+
+@media all and (max-width: 1099px) {
+  .researchos-project-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media all and (max-width: 799px) {
+  :root {
+    --ros-glass-blur: 12px;
+    --ros-glass-saturation: 118%;
+    --ros-glass-radius: 16px;
+    --ros-glass-shadow:
+      0 10px 28px color-mix(in srgb, #000 22%, transparent),
+      inset 0 1px 0 var(--ros-glass-highlight);
+    --ros-material-shadow: inset 0 1px 0 color-mix(in srgb, var(--ros-silver) 8%, transparent);
+  }
+
+  .page[data-frame="full-width"] > #quartz-body {
+    padding: 0 1rem;
+  }
+
+  .page[data-frame="default"] > #quartz-body .sidebar.left {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .researchos-home {
+    padding-top: 3.25rem;
+  }
+
+  .researchos-project-grid,
+  .researchos-knowledge-grid,
+  .researchos-question-list {
+    grid-template-columns: 1fr;
+  }
+
+  .researchos-project-card {
+    min-height: 205px;
+    box-shadow: var(--ros-material-shadow);
+  }
+
+  .researchos-page-meta-actions {
+    gap: 0.6rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .researchos-object-meta {
+    width: 100%;
+    padding: 0 0.15rem;
+  }
+
+  .researchos-page-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    a,
+    button {
+      width: 100%;
+      min-height: 2.75rem;
+      background: var(--ros-glass-regular);
+      box-shadow:
+        0 8px 22px color-mix(in srgb, #000 18%, transparent),
+        inset 0 1px 0 var(--ros-glass-highlight);
+      -webkit-backdrop-filter: blur(var(--ros-glass-blur)) saturate(var(--ros-glass-saturation));
+      backdrop-filter: blur(var(--ros-glass-blur)) saturate(var(--ros-glass-saturation));
+    }
+  }
+
+  .article-title {
+    font-size: clamp(2rem, 10vw, 2.35rem);
+  }
+
+  .table-container {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --ros-glass-thin: color-mix(in srgb, #fff 94%, var(--ros-silver));
+    --ros-glass-regular: color-mix(in srgb, #fff 90%, var(--ros-silver));
+    --ros-glass-strong: color-mix(in srgb, #fff 86%, var(--ros-silver));
+    --ros-material-bg: var(--ros-glass-thin);
+    --ros-material-bg-hover: color-mix(in srgb, #fff 84%, var(--ros-silver));
+    --ros-glass-bg: var(--ros-glass-regular);
+    --ros-glass-blur: 0px;
+    --ros-ambient-light: none;
+    --ros-glass-shadow:
+      0 10px 28px color-mix(in srgb, var(--ros-graphite) 8%, transparent),
+      inset 0 1px 0 var(--ros-glass-highlight);
+  }
+
+  :root[saved-theme="dark"] {
+    --ros-glass-thin: color-mix(in srgb, var(--ros-graphite) 88%, var(--ros-silver));
+    --ros-glass-regular: color-mix(in srgb, var(--ros-graphite) 82%, var(--ros-silver));
+    --ros-glass-strong: color-mix(in srgb, var(--ros-graphite) 76%, var(--ros-silver));
+    --ros-material-bg: var(--ros-glass-thin);
+    --ros-material-bg-hover: color-mix(in srgb, var(--ros-graphite) 80%, var(--ros-silver));
+    --ros-glass-bg: var(--ros-glass-regular);
+  }
+
+  .researchos-page-meta-actions,
+  .researchos-page-actions a,
+  .researchos-page-actions button,
+  .researchos-mobile-toc,
+  .page[data-frame="default"] .sidebar.right > .toc,
+  .page[data-frame="default"] .sidebar.right > .backlinks,
+  .sidebar.left .search-button,
+  button.darkmode,
+  button.readermode,
+  button.mobile-explorer {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --ros-glass-thin: color-mix(in srgb, #fff 94%, var(--ros-silver));
+    --ros-glass-regular: color-mix(in srgb, #fff 90%, var(--ros-silver));
+    --ros-glass-strong: color-mix(in srgb, #fff 86%, var(--ros-silver));
+    --ros-material-bg: var(--ros-glass-thin);
+    --ros-glass-bg: var(--ros-glass-regular);
+  }
+
+  :root[saved-theme="dark"] {
+    --ros-glass-thin: color-mix(in srgb, var(--ros-graphite) 88%, var(--ros-silver));
+    --ros-glass-regular: color-mix(in srgb, var(--ros-graphite) 82%, var(--ros-silver));
+    --ros-glass-strong: color-mix(in srgb, var(--ros-graphite) 76%, var(--ros-silver));
+    --ros-material-bg: var(--ros-glass-thin);
+    --ros-glass-bg: var(--ros-glass-regular);
+  }
+
+  .researchos-page-meta-actions,
+  .researchos-page-actions a,
+  .researchos-page-actions button,
+  .researchos-mobile-toc,
+  .page[data-frame="default"] .sidebar.right > .toc,
+  .page[data-frame="default"] .sidebar.right > .backlinks,
+  .sidebar.left .search-button,
+  button.darkmode,
+  button.readermode,
+  button.mobile-explorer {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media print {
+  @page {
+    size: auto;
+    margin: 16mm 14mm 18mm;
+  }
+
+  :root,
+  html,
+  body {
+    color-scheme: light;
+    background: #fff !important;
+    background-image: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  body,
+  p,
+  li,
+  td,
+  th,
+  code,
+  .katex {
+    color: #000 !important;
+  }
+
+  .page,
+  .page > #quartz-body,
+  .page .center,
+  .page .center > .page-header,
+  .page .center > article,
+  .page .center > .page-footer {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .sidebar,
+  footer,
+  .breadcrumbs,
+  .researchos-page-actions,
+  .researchos-mobile-toc,
+  .backlinks,
+  .toc,
+  .graph,
+  .page-footer,
+  .center > hr {
+    display: none !important;
+  }
+
+  .researchos-page-meta-actions {
+    margin: 0 0 1rem;
+    padding: 0 0 0.75rem;
+    border-color: color-mix(in srgb, #000 28%, transparent);
+    border-width: 0 0 1px;
+    border-radius: 0;
+    background: transparent !important;
+  }
+
+  .researchos-badge {
+    color: #000 !important;
+    border-color: color-mix(in srgb, #000 54%, transparent);
+    background: transparent !important;
+  }
+
+  a {
+    color: #000 !important;
+    text-decoration: underline;
+  }
+
+  .table-container {
+    overflow: visible;
+    border-color: color-mix(in srgb, #000 34%, transparent);
+  }
+
+  .table-container > table {
+    width: 100%;
+    font-size: 8.5pt;
+  }
+
+  pre,
+  blockquote,
+  .table-container,
+  figure {
+    break-inside: avoid;
+  }
+
+  pre,
+  code,
+  blockquote,
+  th,
+  tr {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .katex-display,
+  pre,
+  .table-container {
+    max-width: 100%;
+  }
+}
