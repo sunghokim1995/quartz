@@ -24,7 +24,7 @@ function Test-ResearchOsProcess {
       return $false
     }
 
-    if ($process.CommandLine -match "(?i)start-research-os\.ps1|llm-wiki-quartz|quartz.*build.*--serve.*C:\\Users\\sungh\\llm-wiki\\wiki.*--host 127\.0\.0\.1") {
+    if ($process.CommandLine -match "(?i)start-research-os\.ps1|llm-wiki-quartz|ResearchOS[\\/]repos[\\/]quartz|quartz[\\/]bootstrap-cli\.mjs build --serve") {
       return $true
     }
 

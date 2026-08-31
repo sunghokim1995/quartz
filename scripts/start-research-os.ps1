@@ -7,7 +7,7 @@ $QuartzRoot = Split-Path -Parent $PSScriptRoot
 $ResearchOsConfig = Join-Path $env:LOCALAPPDATA "PersonalLLMWiki\http-mcp\config.json"
 if (Test-Path -LiteralPath $ResearchOsConfig -PathType Leaf) {
   $researchOs = Get-Content -LiteralPath $ResearchOsConfig -Raw | ConvertFrom-Json
-  foreach ($name in @("RESEARCH_OS_MODE", "RESEARCH_OS_VAULT_ROOT", "RESEARCH_OS_RUNTIME_ROOT", "RESEARCH_OS_DATA_ROOT", "RESEARCH_OS_HOME", "RESEARCH_OS_CODE_ROOT")) {
+  foreach ($name in @("RESEARCH_OS_MODE", "RESEARCHOS_ROOT", "RESEARCH_OS_VAULT_ROOT", "RESEARCH_OS_RUNTIME_ROOT", "RESEARCH_OS_DATA_ROOT", "RESEARCH_OS_HOME", "RESEARCH_OS_CODE_ROOT")) {
     if ($researchOs.PSObject.Properties[$name] -and "$($researchOs.$name)".Trim()) {
       Set-Item -Path "Env:$name" -Value "$($researchOs.$name)".Trim()
     }
@@ -19,7 +19,8 @@ if (Test-Path -LiteralPath $ResearchOsConfig -PathType Leaf) {
     Remove-Item Env:RESEARCH_OS_ALLOW_CREATE_DATABASE -ErrorAction SilentlyContinue
   }
 }
-$CodeRoot = if ($env:RESEARCH_OS_CODE_ROOT) { $env:RESEARCH_OS_CODE_ROOT } else { "C:\Users\sungh\llm-wiki" }
+$ResearchOsRoot = if ($env:RESEARCHOS_ROOT) { $env:RESEARCHOS_ROOT } else { Join-Path $env:USERPROFILE "ResearchOS" }
+$CodeRoot = if ($env:RESEARCH_OS_CODE_ROOT) { $env:RESEARCH_OS_CODE_ROOT } else { Join-Path $ResearchOsRoot "repos\core" }
 $Resolver = Join-Path $CodeRoot "scripts\resolve-research-os-paths.mjs"
 $HostAddress = "127.0.0.1"
 $Port = 8080
