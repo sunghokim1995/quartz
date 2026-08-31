@@ -1,5 +1,6 @@
 import assert from "node:assert/strict"
 import { execFile } from "node:child_process"
+import { createHash } from "node:crypto"
 import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import path from "node:path"
@@ -11,6 +12,12 @@ import { transform } from "lightningcss"
 import render from "preact-render-to-string"
 
 const execFileAsync = promisify(execFile)
+
+async function expectedFaviconHref() {
+  const icon = await readFile("quartz/static/icon.png")
+  const version = createHash("sha256").update(icon).digest("hex").slice(0, 8)
+  return `/static/icon.png?v=${version}`
+}
 
 async function compileVisualCss() {
   const result = await build({
@@ -352,10 +359,58 @@ test("Markdown emission removes stale downloads and writes only current canonica
 test("root redirect is static and points to the canonical Home route", async () => {
   const { createRootRedirectHtml } = await import("./src/emitters/RootRedirect.ts")
   const html = createRootRedirectHtml("/home")
+  const faviconHref = await expectedFaviconHref()
 
   assert.match(html, /http-equiv="refresh" content="0; url=\/home"/)
   assert.match(html, /rel="canonical" href="\/home"/)
+  assert.ok(html.includes(`rel="icon" href="${faviconHref}"`))
   assert.doesNotMatch(html, /<script/i)
+})
+
+test("alias redirect wrapper adds the versioned favicon without changing redirect behavior", async () => {
+  const redirectModule = await import("./src/emitters/RootRedirect.ts")
+  const withRedirectFavicon = (
+    redirectModule as typeof redirectModule & {
+      withRedirectFavicon?: (emitter: unknown) => {
+        emit: (...args: unknown[]) => Promise<string[]>
+      }
+    }
+  ).withRedirectFavicon
+  assert.equal(typeof withRedirectFavicon, "function")
+
+  const outputDir = await mkdtemp(path.join(tmpdir(), "researchos-alias-redirect-"))
+  try {
+    const redirectPath = path.join(outputDir, "acetamide.html")
+    const originalHtml = `<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<title>entities/molecules/acetamide</title>
+<link rel="canonical" href="./entities/molecules/acetamide">
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta http-equiv="refresh" content="0; url=./entities/molecules/acetamide">
+</head>
+</html>
+`
+    const delegate = {
+      name: "AliasRedirects",
+      async emit() {
+        await writeFile(redirectPath, originalHtml, "utf8")
+        return [redirectPath]
+      },
+    }
+
+    const wrapped = withRedirectFavicon!(delegate)
+    assert.deepEqual(await wrapped.emit(), [redirectPath])
+
+    const html = await readFile(redirectPath, "utf8")
+    const faviconHref = await expectedFaviconHref()
+    assert.ok(html.includes(`rel="icon" href="${faviconHref}"`))
+    assert.match(html, /rel="canonical" href="\.\/entities\/molecules\/acetamide"/)
+    assert.match(html, /http-equiv="refresh" content="0; url=\.\/entities\/molecules\/acetamide"/)
+  } finally {
+    await rm(outputDir, { recursive: true, force: true })
+  }
 })
 
 test("render sanitization removes only a first H1 that duplicates the frontmatter title", async () => {

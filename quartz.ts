@@ -7,6 +7,7 @@ import ExplorerRefinement, {
   compareResearchOSExplorerNodes,
 } from "./plugins/researchos-ui/src/components/ExplorerRefinement"
 import { PublicationArtifacts } from "./plugins/researchos-ui/src/emitters/PublicationMarkdown"
+import { withRedirectFavicon } from "./plugins/researchos-ui/src/emitters/RootRedirect"
 import { PublicationScope } from "./plugins/researchos-ui/src/filters/PublicationScope"
 import { HomePage } from "./plugins/researchos-ui/src/pageTypes/HomePage"
 import { CanonicalTitle } from "./plugins/researchos-ui/src/transformers/CanonicalTitle"
@@ -106,6 +107,9 @@ config.plugins.pageTypes ??= []
 config.plugins.pageTypes.push(HomePage())
 config.plugins.emitters = config.plugins.emitters.filter(
   (emitter) => emitter.name !== "PageTypeDispatcher",
+)
+config.plugins.emitters = config.plugins.emitters.map((emitter) =>
+  emitter.name === "AliasRedirects" ? withRedirectFavicon(emitter) : emitter,
 )
 config.plugins.emitters.push(
   PageTypes.PageTypeDispatcher({
