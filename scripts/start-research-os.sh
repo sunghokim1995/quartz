@@ -1,18 +1,27 @@
 #!/usr/bin/env bash
-# macOS counterpart of scripts/start-research-os.ps1: serves the ResearchOS
-# production Vault through Quartz on 127.0.0.1:8080. Used directly by the
-# com.researchos.quartz LaunchAgent (core repo: scripts/manage-launchd.sh)
-# and by scripts/manage-research-os.sh.
+# macOS/Linux counterpart of scripts/start-research-os.ps1: serves the
+# ResearchOS production Vault through Quartz on 127.0.0.1:8080. Used directly
+# by the com.researchos.quartz LaunchAgent (core repo: scripts/manage-launchd.sh)
+# and by scripts/manage-research-os.sh. (The core repository's
+# scripts/start-research-os.sh is the whole-system launcher; this one is the
+# Quartz process itself.)
 #
-# Environment: RESEARCHOS_ROOT (default ~/ResearchOS), RESEARCH_OS_CODE_ROOT
-# (default <RESEARCHOS_ROOT>/repos/core), LLM_WIKI_LOCAL_ROOT,
-# RESEARCHOS_LOG_DIR. RESEARCH_OS_* keys found in the HTTP MCP config.json
-# are imported first, exactly like the PowerShell launcher.
+# Environment: RESEARCHOS_ROOT (alias RESEARCH_OS_ROOT; default: the
+# <ROOT>/repos/quartz layout around this checkout, else ~/ResearchOS),
+# RESEARCH_OS_CODE_ROOT (default <RESEARCHOS_ROOT>/repos/core),
+# RESEARCHOS_NODE, LLM_WIKI_LOCAL_ROOT, RESEARCHOS_LOG_DIR. RESEARCH_OS_* keys
+# found in the HTTP MCP config.json are imported first, exactly like the
+# PowerShell launcher.
 set -euo pipefail
 
 QUARTZ_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-LOCAL_ROOT="${LLM_WIKI_LOCAL_ROOT:-$HOME/Library/Application Support/PersonalLLMWiki}"
-LOG_DIR="${RESEARCHOS_LOG_DIR:-$HOME/Library/Logs/ResearchOS}"
+if [ "$(uname -s)" = "Darwin" ]; then
+  LOCAL_ROOT="${LLM_WIKI_LOCAL_ROOT:-$HOME/Library/Application Support/PersonalLLMWiki}"
+  LOG_DIR="${RESEARCHOS_LOG_DIR:-$HOME/Library/Logs/ResearchOS}"
+else
+  LOCAL_ROOT="${LLM_WIKI_LOCAL_ROOT:-${XDG_DATA_HOME:-$HOME/.local/share}/PersonalLLMWiki}"
+  LOG_DIR="${RESEARCHOS_LOG_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/ResearchOS/logs}"
+fi
 EVENT_LOG="$LOG_DIR/quartz-events.log"
 HTTP_MCP_CONFIG="${LLM_WIKI_HTTP_MCP_CONFIG_DIR:-$LOCAL_ROOT/http-mcp}/config.json"
 HOST_ADDRESS="127.0.0.1"
@@ -28,7 +37,22 @@ log() {
 }
 die() { log "$1" ERROR >&2; exit 1; }
 
-command -v node >/dev/null 2>&1 || die "node was not found on PATH"
+# Node.js discovery (same order as the core repo's lib/researchos-macos.sh):
+# RESEARCHOS_NODE, PATH, Homebrew node@22/node, volta, fnm, nvm, distro node.
+node_ok() { [ -x "$1" ] && "$1" -e 'const [a, b] = process.versions.node.split(".").map(Number); process.exit(a > 22 || (a === 22 && b >= 5) ? 0 : 1)' >/dev/null 2>&1; }
+find_node() {
+  local candidate
+  if [ -n "${RESEARCHOS_NODE:-}" ] && node_ok "$RESEARCHOS_NODE"; then printf '%s' "$RESEARCHOS_NODE"; return 0; fi
+  if candidate="$(command -v node 2>/dev/null)" && node_ok "$candidate"; then printf '%s' "$candidate"; return 0; fi
+  for candidate in /opt/homebrew/opt/node@22/bin/node /opt/homebrew/bin/node /usr/local/opt/node@22/bin/node /usr/local/bin/node \
+      "$HOME/.volta/bin/node" "$HOME/.local/share/fnm/aliases/default/bin/node" "$HOME/.fnm/aliases/default/bin/node" \
+      "${NVM_DIR:-$HOME/.nvm}"/versions/node/v22.*/bin/node "${NVM_DIR:-$HOME/.nvm}"/versions/node/*/bin/node /usr/bin/node /snap/bin/node; do
+    if node_ok "$candidate"; then printf '%s' "$candidate"; return 0; fi
+  done
+  return 1
+}
+NODE_BIN="$(find_node)" || die "Node.js 22.5 or newer was not found (RESEARCHOS_NODE, PATH, Homebrew, volta, fnm, nvm); run repos/core/scripts/bootstrap.sh"
+case ":$PATH:" in *":$(dirname "$NODE_BIN"):"*) ;; *) export PATH="$(dirname "$NODE_BIN"):$PATH" ;; esac
 
 json_field() {
   node -e '
@@ -42,7 +66,7 @@ json_field() {
 }
 
 if [ -f "$HTTP_MCP_CONFIG" ]; then
-  for name in RESEARCH_OS_MODE RESEARCHOS_ROOT RESEARCH_OS_VAULT_ROOT RESEARCH_OS_RUNTIME_ROOT RESEARCH_OS_DATA_ROOT RESEARCH_OS_HOME RESEARCH_OS_CODE_ROOT; do
+  for name in RESEARCH_OS_MODE RESEARCHOS_ROOT RESEARCH_OS_ROOT RESEARCH_OS_VAULT_ROOT RESEARCH_OS_RUNTIME_ROOT RESEARCH_OS_DATA_ROOT RESEARCH_OS_HOME RESEARCH_OS_CODE_ROOT; do
     if value="$(json_field "$HTTP_MCP_CONFIG" "$name" 2>/dev/null)"; then
       export "$name=$value"
     fi
@@ -52,8 +76,18 @@ if [ "${RESEARCH_OS_MODE:-}" = "greenfield" ]; then
   unset LLM_WIKI_ROOT LLM_WIKI_DB_PATH RESEARCH_DB_PATH RESEARCH_OS_ALLOW_CREATE_DATABASE
 fi
 
-RESEARCHOS_ROOT="${RESEARCHOS_ROOT:-$HOME/ResearchOS}"
+# Root precedence: RESEARCHOS_ROOT > RESEARCH_OS_ROOT > RESEARCH_OS_HOME >
+# <ROOT>/repos/quartz layout > ~/ResearchOS (no fixed absolute path).
+RESEARCHOS_ROOT="${RESEARCHOS_ROOT:-${RESEARCH_OS_ROOT:-${RESEARCH_OS_HOME:-}}}"
+if [ -z "$RESEARCHOS_ROOT" ]; then
+  if [ "$(basename "$(dirname "$QUARTZ_ROOT")")" = "repos" ]; then
+    RESEARCHOS_ROOT="$(cd "$(dirname "$QUARTZ_ROOT")/.." && pwd -P)"
+  else
+    RESEARCHOS_ROOT="$HOME/ResearchOS"
+  fi
+fi
 export RESEARCHOS_ROOT
+export RESEARCH_OS_MODE="${RESEARCH_OS_MODE:-greenfield}"
 CODE_ROOT="${RESEARCH_OS_CODE_ROOT:-$RESEARCHOS_ROOT/repos/core}"
 RESOLVER="$CODE_ROOT/scripts/resolve-research-os-paths.mjs"
 [ -f "$RESOLVER" ] || die "ResearchOS path resolver not found: $RESOLVER"

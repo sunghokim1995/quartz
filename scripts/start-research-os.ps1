@@ -7,7 +7,7 @@ $QuartzRoot = Split-Path -Parent $PSScriptRoot
 $ResearchOsConfig = Join-Path $env:LOCALAPPDATA "PersonalLLMWiki\http-mcp\config.json"
 if (Test-Path -LiteralPath $ResearchOsConfig -PathType Leaf) {
   $researchOs = Get-Content -LiteralPath $ResearchOsConfig -Raw | ConvertFrom-Json
-  foreach ($name in @("RESEARCH_OS_MODE", "RESEARCHOS_ROOT", "RESEARCH_OS_VAULT_ROOT", "RESEARCH_OS_RUNTIME_ROOT", "RESEARCH_OS_DATA_ROOT", "RESEARCH_OS_HOME", "RESEARCH_OS_CODE_ROOT")) {
+  foreach ($name in @("RESEARCH_OS_MODE", "RESEARCHOS_ROOT", "RESEARCH_OS_ROOT", "RESEARCH_OS_VAULT_ROOT", "RESEARCH_OS_RUNTIME_ROOT", "RESEARCH_OS_DATA_ROOT", "RESEARCH_OS_HOME", "RESEARCH_OS_CODE_ROOT")) {
     if ($researchOs.PSObject.Properties[$name] -and "$($researchOs.$name)".Trim()) {
       Set-Item -Path "Env:$name" -Value "$($researchOs.$name)".Trim()
     }
@@ -19,7 +19,20 @@ if (Test-Path -LiteralPath $ResearchOsConfig -PathType Leaf) {
     Remove-Item Env:RESEARCH_OS_ALLOW_CREATE_DATABASE -ErrorAction SilentlyContinue
   }
 }
-$ResearchOsRoot = if ($env:RESEARCHOS_ROOT) { $env:RESEARCHOS_ROOT } else { Join-Path $env:USERPROFILE "ResearchOS" }
+# Root precedence: RESEARCHOS_ROOT > RESEARCH_OS_ROOT > RESEARCH_OS_HOME >
+# <ROOT>\repos\quartz layout around this checkout > %USERPROFILE%\ResearchOS.
+$ResearchOsRoot = $null
+foreach ($name in @("RESEARCHOS_ROOT", "RESEARCH_OS_ROOT", "RESEARCH_OS_HOME")) {
+  $value = [Environment]::GetEnvironmentVariable($name, "Process")
+  if ($value -and $value.Trim()) { $ResearchOsRoot = $value.Trim(); break }
+}
+if (-not $ResearchOsRoot) {
+  $layoutParent = Split-Path -Parent $QuartzRoot
+  if ($layoutParent -and (Split-Path -Leaf $layoutParent) -ieq "repos") { $ResearchOsRoot = Split-Path -Parent $layoutParent }
+  else { $ResearchOsRoot = Join-Path $env:USERPROFILE "ResearchOS" }
+}
+$env:RESEARCHOS_ROOT = $ResearchOsRoot
+if (-not $env:RESEARCH_OS_MODE) { $env:RESEARCH_OS_MODE = "greenfield" }
 $CodeRoot = if ($env:RESEARCH_OS_CODE_ROOT) { $env:RESEARCH_OS_CODE_ROOT } else { Join-Path $ResearchOsRoot "repos\core" }
 $Resolver = Join-Path $CodeRoot "scripts\resolve-research-os-paths.mjs"
 $HostAddress = "127.0.0.1"
@@ -47,7 +60,7 @@ if (-not (Test-Path -LiteralPath $Resolver -PathType Leaf)) {
   throw "ResearchOS path resolver not found: $Resolver"
 }
 
-$node = (Get-Command node.exe -ErrorAction Stop).Source
+$node = if ($env:RESEARCHOS_NODE -and (Test-Path -LiteralPath $env:RESEARCHOS_NODE)) { $env:RESEARCHOS_NODE } else { (Get-Command node.exe -ErrorAction Stop).Source }
 $resolvedJson = & $node $Resolver --require-vault
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($resolvedJson)) {
   Write-QuartzLog -Level ERROR -Message "ResearchOS path resolution failed: $resolvedJson"

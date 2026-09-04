@@ -1,19 +1,24 @@
 #!/usr/bin/env bash
-# macOS counterpart of scripts/manage-research-os.ps1.
+# macOS/Linux counterpart of scripts/manage-research-os.ps1.
 #
 # Usage: scripts/manage-research-os.sh start|stop|status
 #
 # Prefers the com.researchos.quartz LaunchAgent (installed from the core
-# repo with scripts/manage-launchd.sh install quartz). Without it, start runs
-# scripts/start-research-os.sh as a background process for this session.
-# `status` prints `Listening : True|False`, which mcp-server/quartz-maintenance.mjs
-# parses before a maintenance window.
+# repo with scripts/manage-launchd.sh install quartz). Without it (and on
+# Linux), start runs scripts/start-research-os.sh as a background process for
+# this session. `status` prints `Listening : True|False`, which
+# mcp-server/quartz-maintenance.mjs parses before a maintenance window.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 START_SCRIPT="$SCRIPT_DIR/start-research-os.sh"
-LOCAL_ROOT="${LLM_WIKI_LOCAL_ROOT:-$HOME/Library/Application Support/PersonalLLMWiki}"
-LOG_DIR="${RESEARCHOS_LOG_DIR:-$HOME/Library/Logs/ResearchOS}"
+if [ "$(uname -s)" = "Darwin" ]; then
+  LOCAL_ROOT="${LLM_WIKI_LOCAL_ROOT:-$HOME/Library/Application Support/PersonalLLMWiki}"
+  LOG_DIR="${RESEARCHOS_LOG_DIR:-$HOME/Library/Logs/ResearchOS}"
+else
+  LOCAL_ROOT="${LLM_WIKI_LOCAL_ROOT:-${XDG_DATA_HOME:-$HOME/.local/share}/PersonalLLMWiki}"
+  LOG_DIR="${RESEARCHOS_LOG_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/ResearchOS/logs}"
+fi
 PID_FILE="$LOCAL_ROOT/quartz/quartz.pid"
 MANUAL_LOG="$LOG_DIR/quartz.manual.log"
 LABEL="com.researchos.quartz"
@@ -34,9 +39,17 @@ is_research_os_process() {
   esac
 }
 
+port_pids() {
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -nP -iTCP:"$PORT" -sTCP:LISTEN -t 2>/dev/null | sort -u || true
+  elif command -v ss >/dev/null 2>&1; then
+    ss -Hltnp "sport = :$PORT" 2>/dev/null | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | sort -u || true
+  fi
+}
+
 research_os_pids() {
   local pid
-  for pid in $(lsof -nP -iTCP:"$PORT" -sTCP:LISTEN -t 2>/dev/null | sort -u); do
+  for pid in $(port_pids); do
     if is_research_os_process "$pid"; then
       printf '%s\n' "$pid"
     fi
