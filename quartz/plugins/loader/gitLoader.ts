@@ -1,6 +1,6 @@
 import fs from "fs"
 import path from "path"
-import { execSync } from "child_process"
+import { execFileSync } from "child_process"
 import git from "isomorphic-git"
 import http from "isomorphic-git/http/node"
 import { styleText } from "util"
@@ -39,6 +39,42 @@ export interface GitPluginSpec {
 export type PluginInstallSource = string | GitPluginSpec
 
 const PLUGINS_CACHE_DIR = path.join(process.cwd(), ".quartz", "plugins")
+
+/**
+ * Plugin names and subdirectories become filesystem paths. Keep them strictly
+ * relative so a config value cannot escape the Quartz-owned plugin cache.
+ */
+function safeRelativePath(value: string, label: string): string {
+  const normalized = value.replaceAll("\\", "/")
+  const segments = normalized.split("/")
+  if (
+    !normalized ||
+    normalized.includes("\0") ||
+    path.posix.isAbsolute(normalized) ||
+    /^[A-Za-z]:\//.test(normalized) ||
+    segments.some((segment) => !segment || segment === "." || segment === "..")
+  ) {
+    throw new Error(`Invalid ${label}: path must be a non-empty relative path`)
+  }
+  return normalized
+}
+
+function containedPath(root: string, relative: string, label: string): string {
+  const target = path.resolve(root, ...safeRelativePath(relative, label).split("/"))
+  const resolvedRoot = path.resolve(root)
+  if (!target.startsWith(`${resolvedRoot}${path.sep}`)) {
+    throw new Error(`Invalid ${label}: path escapes its allowed root`)
+  }
+  return target
+}
+
+export function pluginCachePath(name: string): string {
+  return containedPath(PLUGINS_CACHE_DIR, name, "plugin name")
+}
+
+export function pluginSubdirectoryPath(root: string, subdir: string): string {
+  return containedPath(root, subdir, "plugin subdirectory")
+}
 
 /**
  * Check if a source string refers to a local file path.
@@ -248,7 +284,7 @@ export function installNativeDeps(
   }
 
   try {
-    execSync(`npm install --no-save ${installArgs.join(" ")}`, {
+    execFileSync("npm", ["install", "--no-save", ...installArgs], {
       cwd: process.cwd(),
       stdio: options.verbose ? "inherit" : "pipe",
       timeout: 120_000,
@@ -386,7 +422,7 @@ function buildInstalledPlugin(pluginDir: string, name: string, verbose?: boolean
     if (verbose) {
       console.log(styleText("cyan", `→`), `${name}: installing dependencies...`)
     }
-    execSync("npm install --ignore-scripts", {
+    execFileSync("npm", ["install", "--ignore-scripts"], {
       cwd: pluginDir,
       stdio: verbose ? "inherit" : "pipe",
       timeout: 120_000,
@@ -396,14 +432,14 @@ function buildInstalledPlugin(pluginDir: string, name: string, verbose?: boolean
       if (verbose) {
         console.log(styleText("cyan", `→`), `${name}: building...`)
       }
-      execSync("npm run build", {
+      execFileSync("npm", ["run", "build"], {
         cwd: pluginDir,
         stdio: verbose ? "inherit" : "pipe",
         timeout: 120_000,
       })
     }
 
-    execSync("npm prune --omit=dev", {
+    execFileSync("npm", ["prune", "--omit=dev"], {
       cwd: pluginDir,
       stdio: verbose ? "inherit" : "pipe",
       timeout: 60_000,
@@ -430,7 +466,7 @@ export async function installPlugin(
   spec: GitPluginSpec,
   options: { verbose?: boolean; force?: boolean } = {},
 ): Promise<PluginInstallResult> {
-  const pluginDir = path.join(PLUGINS_CACHE_DIR, spec.name)
+  const pluginDir = pluginCachePath(spec.name)
 
   // Local source: symlink instead of clone
   if (spec.local) {
@@ -528,10 +564,18 @@ export async function installPlugin(
       fs.rmSync(tmpDir, { recursive: true })
     }
 
-    const branchArg = spec.ref ? ` --branch ${spec.ref}` : ""
-    execSync(`git clone --depth 1${branchArg} "${spec.repo}" "${tmpDir}"`, { stdio: "pipe" })
+    const cloneArgs = [
+      "clone",
+      "--depth",
+      "1",
+      ...(spec.ref ? [`--branch=${spec.ref}`] : []),
+      "--",
+      spec.repo,
+      tmpDir,
+    ]
+    execFileSync("git", cloneArgs, { stdio: "pipe" })
 
-    const subdirPath = path.join(tmpDir, spec.subdir)
+    const subdirPath = pluginSubdirectoryPath(tmpDir, spec.subdir)
     if (!fs.existsSync(subdirPath)) {
       fs.rmSync(tmpDir, { recursive: true })
       throw new Error(`Subdirectory "${spec.subdir}" not found in repository ${spec.repo}`)
@@ -540,8 +584,16 @@ export async function installPlugin(
     fs.renameSync(subdirPath, pluginDir)
     fs.rmSync(tmpDir, { recursive: true })
   } else {
-    const branchArg = spec.ref ? ` --branch ${spec.ref}` : ""
-    execSync(`git clone --depth 1${branchArg} "${spec.repo}" "${pluginDir}"`, { stdio: "pipe" })
+    const cloneArgs = [
+      "clone",
+      "--depth",
+      "1",
+      ...(spec.ref ? [`--branch=${spec.ref}`] : []),
+      "--",
+      spec.repo,
+      pluginDir,
+    ]
+    execFileSync("git", cloneArgs, { stdio: "pipe" })
   }
 
   buildInstalledPlugin(pluginDir, spec.name, options.verbose)
